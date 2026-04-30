@@ -1,4 +1,5 @@
 import type { Profile } from "@/lib/supabase/types";
+import { googleCalendarProvider } from "./google-provider";
 import { mockCalendarProvider } from "./mock-provider";
 import type { CalendarBusySlot } from "./types";
 
@@ -7,7 +8,14 @@ export async function getCalendarBusySlots(
   startDate: string,
   endDate: string
 ): Promise<CalendarBusySlot[]> {
-  // Future providers can branch on profile.calendar_connected/provider fields.
+  if (profile.calendar_connected) {
+    return googleCalendarProvider.getBusySlots({
+      profile,
+      startDate,
+      endDate
+    });
+  }
+
   return mockCalendarProvider.getBusySlots({
     profile,
     startDate,

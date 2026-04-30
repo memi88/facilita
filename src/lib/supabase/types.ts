@@ -200,6 +200,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      google_calendar_connections: {
+        Row: {
+          id: string;
+          profile_id: string;
+          google_email: string | null;
+          calendar_id: string;
+          access_token: string | null;
+          refresh_token: string | null;
+          token_expires_at: string | null;
+          scope: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          google_email?: string | null;
+          calendar_id?: string;
+          access_token?: string | null;
+          refresh_token?: string | null;
+          token_expires_at?: string | null;
+          scope?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          google_email?: string | null;
+          calendar_id?: string;
+          access_token?: string | null;
+          refresh_token?: string | null;
+          token_expires_at?: string | null;
+          scope?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -217,3 +253,5 @@ export type AvailabilityDateBlock =
   Database["public"]["Tables"]["availability_date_blocks"]["Row"];
 export type BookingNotification =
   Database["public"]["Tables"]["booking_notifications"]["Row"];
+export type GoogleCalendarConnection =
+  Database["public"]["Tables"]["google_calendar_connections"]["Row"];

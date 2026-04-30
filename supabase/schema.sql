@@ -65,6 +65,19 @@ create table if not exists public.booking_notifications (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.google_calendar_connections (
+  id uuid primary key default gen_random_uuid(),
+  profile_id uuid not null unique references public.profiles(id) on delete cascade,
+  google_email text,
+  calendar_id text not null default 'primary',
+  access_token text,
+  refresh_token text,
+  token_expires_at timestamptz,
+  scope text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create index if not exists booking_requests_status_idx
   on public.booking_requests (status);
 
@@ -114,10 +127,19 @@ before update on public.booking_notifications
 for each row
 execute function public.set_updated_at();
 
+drop trigger if exists google_calendar_connections_set_updated_at
+  on public.google_calendar_connections;
+
+create trigger google_calendar_connections_set_updated_at
+before update on public.google_calendar_connections
+for each row
+execute function public.set_updated_at();
+
 alter table public.booking_requests enable row level security;
 alter table public.availability_rules enable row level security;
 alter table public.availability_date_blocks enable row level security;
 alter table public.booking_notifications enable row level security;
+alter table public.google_calendar_connections enable row level security;
 
 create policy "Allow public booking inserts"
 on public.booking_requests

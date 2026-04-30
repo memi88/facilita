@@ -10,6 +10,8 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ADMIN_EMAILS=admin@example.com
+GOOGLE_CLIENT_ID=your-google-oauth-client-id
+GOOGLE_CLIENT_SECRET=your-google-oauth-client-secret
 ```
 
 Optional for local/provider testing:
@@ -60,6 +62,32 @@ In Supabase Dashboard > Authentication > URL Configuration:
 5. Submit a booking request.
 6. Confirm it appears in `/admin`.
 7. Approve/reject and verify notifications are enqueued.
+
+## Google Calendar OAuth
+
+In Google Cloud Console:
+
+1. Enable Google Calendar API.
+2. Configure OAuth consent screen.
+3. Create OAuth Client ID for a Web application.
+4. Add this Authorized redirect URI:
+
+```text
+https://your-domain.com/api/google-calendar/callback
+```
+
+For local development, also add:
+
+```text
+http://localhost:3000/api/google-calendar/callback
+```
+
+The app requests these scopes:
+
+```text
+https://www.googleapis.com/auth/calendar.freebusy
+https://www.googleapis.com/auth/calendar.events
+```
 
 ## Before Real Users
 

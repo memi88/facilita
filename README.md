@@ -63,5 +63,6 @@ See `docs/deploy.md` for the Vercel and Supabase production checklist.
 - Each professional profile has its own public booking link and isolated admin data.
 - Booking events enqueue mock WhatsApp notifications for received, approved, rejected, and 24h reminder messages.
 - Calendar availability is abstracted behind a provider. The current provider is mock-only and can block slots using `MOCK_CALENDAR_BUSY_SLOTS`.
+- Google Calendar OAuth can be connected per professional profile from `/admin/perfil`.
 - The code keeps calendar availability separate from persistence so Google Calendar can be added later without changing the page flow.
 - `/admin` is protected by Supabase Auth middleware.

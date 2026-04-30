@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { ArrowLeft, UserRoundCog } from "lucide-react";
 import { ProfileForm } from "@/features/profiles/components/profile-form";
 import { CopyLink } from "@/components/ui/copy-link";
+import { GoogleCalendarCard } from "@/features/calendar/components/google-calendar-card";
 import { getProfileByUserId } from "@/features/profiles/data";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getPublicBookingUrl } from "@/lib/site-url";
@@ -46,6 +47,7 @@ export default async function AdminProfileSetupPage() {
             <CopyLink value={getPublicBookingUrl(profile.slug)} />
           </div>
         ) : null}
+        <GoogleCalendarCard profile={profile} />
         <ProfileForm profile={profile} email={user.email} />
       </section>
     </main>
