@@ -68,7 +68,11 @@ export async function enqueueBookingNotification(
   );
 
   if (error && error.code !== "23505") {
-    throw new Error("Could not enqueue notification.");
+    console.error("[notifications] Could not enqueue notification", {
+      bookingRequestId: booking.id,
+      type,
+      message: error.message
+    });
   }
 }
 

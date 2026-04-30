@@ -7,9 +7,21 @@ export const appointmentTypeValues = [
   "support"
 ] as const;
 
+function normalizePhone(value: unknown) {
+  return String(value ?? "").replace(/\D/g, "");
+}
+
 export const bookingRequestSchema = z.object({
   name: z.string().trim().min(2, "Informe seu nome."),
-  phone: z.string().trim().min(8, "Informe um WhatsApp valido."),
+  phone: z
+    .preprocess(normalizePhone, z.string())
+    .pipe(
+      z
+        .string()
+        .min(10, "Informe um WhatsApp com DDD.")
+        .max(13, "Informe um WhatsApp valido.")
+        .regex(/^\d+$/, "Use somente numeros no WhatsApp.")
+    ),
   appointmentType: z.enum(appointmentTypeValues),
   notes: z.string().trim().max(700, "Use no maximo 700 caracteres.").optional(),
   selectedDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),

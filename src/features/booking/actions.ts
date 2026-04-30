@@ -59,11 +59,23 @@ export async function createBookingRequest(
     };
   }
 
-  const [rules, dateBlocked, calendarBusySlots] = await Promise.all([
-    getAvailabilityRules(profileId),
-    isDateBlocked(profileId, booking.selectedDate),
-    getCalendarBusySlots(profile, booking.selectedDate, booking.selectedDate)
-  ]);
+  let rules;
+  let dateBlocked;
+  let calendarBusySlots;
+
+  try {
+    [rules, dateBlocked, calendarBusySlots] = await Promise.all([
+      getAvailabilityRules(profileId),
+      isDateBlocked(profileId, booking.selectedDate),
+      getCalendarBusySlots(profile, booking.selectedDate, booking.selectedDate)
+    ]);
+  } catch (error) {
+    console.error("[booking] Availability check failed", error);
+    return {
+      ok: false,
+      message: "Nao foi possivel verificar a disponibilidade agora."
+    };
+  }
   const baseSlots = getConfiguredSlotsForDate(
     booking.selectedDate,
     rules,
@@ -92,11 +104,21 @@ export async function createBookingRequest(
   }
 
   const supabase = createSupabaseAdminClient();
-  const slotBlocked = await isSlotBlocked(
-    profileId,
-    booking.selectedDate,
-    booking.selectedTime
-  );
+  let slotBlocked;
+
+  try {
+    slotBlocked = await isSlotBlocked(
+      profileId,
+      booking.selectedDate,
+      booking.selectedTime
+    );
+  } catch (error) {
+    console.error("[booking] Slot conflict check failed", error);
+    return {
+      ok: false,
+      message: "Nao foi possivel confirmar este horario agora."
+    };
+  }
 
   if (slotBlocked) {
     return {

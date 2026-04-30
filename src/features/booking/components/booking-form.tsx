@@ -136,7 +136,13 @@ export function BookingForm({
             <Input name="name" required placeholder="Seu nome completo" />
           </Field>
           <Field label="WhatsApp">
-            <Input name="phone" required placeholder="+55 11 99999-9999" />
+            <Input
+              name="phone"
+              required
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder="5511999999999"
+            />
           </Field>
           <Field label="Tipo de atendimento">
             <Select name="appointmentType" required defaultValue={appointmentTypes[0].value}>
