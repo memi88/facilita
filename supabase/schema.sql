@@ -21,6 +21,8 @@ create table if not exists public.booking_requests (
   rejection_reason text,
   reviewed_at timestamptz,
   reviewed_by text,
+  google_event_id text,
+  google_event_link text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -87,6 +89,9 @@ create index if not exists booking_requests_date_idx
 create unique index if not exists booking_requests_active_slot_unique_idx
   on public.booking_requests (date, time)
   where status in ('pending', 'approved');
+
+create index if not exists booking_requests_google_event_id_idx
+  on public.booking_requests (google_event_id);
 
 create index if not exists booking_notifications_status_schedule_idx
   on public.booking_notifications (status, scheduled_for);

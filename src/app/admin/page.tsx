@@ -1,9 +1,16 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeft, RefreshCw, UserRoundCog } from "lucide-react";
+import {
+  CalendarCog,
+  ClipboardList,
+  Home,
+  Link2,
+  RefreshCw,
+  UserRoundCog
+} from "lucide-react";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import { LogoutButton } from "@/features/auth/components/logout-button";
 import { CopyLink } from "@/components/ui/copy-link";
-import { isAllowedAdminEmail } from "@/features/auth/permissions";
 import { AvailabilitySettings } from "@/features/availability/components/availability-settings";
 import {
   getAvailabilityDateBlocks,
@@ -19,6 +26,7 @@ import { AdminBookingList } from "@/features/booking/components/admin-booking-li
 import { getBookingRequests } from "@/features/booking/data";
 import { NotificationsPanel } from "@/features/notifications/components/notifications-panel";
 import { getRecentNotifications } from "@/features/notifications/data";
+import { CurrentUserCard } from "@/features/profiles/components/current-user-card";
 import { getProfileByUserId } from "@/features/profiles/data";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getPublicBookingUrl } from "@/lib/site-url";
@@ -114,10 +122,6 @@ export default async function AdminPage({
     redirect("/login?next=/admin");
   }
 
-  if (!isAllowedAdminEmail(user.email)) {
-    redirect("/login?error=unauthorized");
-  }
-
   const profile = await getProfileByUserId(user.id);
 
   if (!profile) {
@@ -137,63 +141,114 @@ export default async function AdminPage({
     filterBookings(bookings, currentStatus, currentDate)
   );
   const publicBookingUrl = getPublicBookingUrl(profile.slug);
+  const summaryCards = [
+    { label: "Total", value: counters.total, tone: "bg-white", icon: ClipboardList },
+    { label: "Pendentes", value: counters.pending, tone: "bg-accent/15", icon: CalendarCog },
+    { label: "Aprovados", value: counters.approved, tone: "bg-primary/10", icon: Link2 },
+    { label: "Rejeitados", value: counters.rejected, tone: "bg-red-50", icon: UserRoundCog }
+  ];
 
   return (
-    <main className="min-h-screen px-4 py-6 md:px-8">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Inicio
+    <main className="min-h-screen md:grid md:grid-cols-[260px_1fr]">
+      <aside className="border-b border-border bg-white px-4 py-4 md:min-h-screen md:border-b-0 md:border-r md:px-5 md:py-6">
+        <div className="flex items-center justify-between gap-3 md:block">
+          <Link href="/" className="flex items-center gap-2 font-semibold">
+            <BrandLogo className="max-w-40" />
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="md:hidden">
+            <LogoutButton />
+          </div>
+        </div>
+        <div className="mt-6 hidden md:block">
+          <CurrentUserCard profile={profile} email={user.email} compact />
+        </div>
+        <nav className="mt-5 flex gap-2 overflow-x-auto md:grid md:gap-2">
+          {[
+            { href: "/admin", label: "Dashboard", icon: ClipboardList },
+            { href: "/admin/perfil", label: "Perfil", icon: UserRoundCog },
+            { href: "/", label: "Inicio", icon: Home }
+          ].map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                <Icon className="h-4 w-4" />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+        <div className="mt-6 hidden md:block">
+          <LogoutButton />
+        </div>
+      </aside>
+
+      <div className="px-4 py-6 md:px-8">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+            <header>
+              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">
+                Dashboard
+              </p>
+              <h1 className="mt-2 text-3xl font-semibold tracking-normal md:text-5xl">
+                Sua agenda, com tudo no lugar
+              </h1>
+              <p className="mt-3 max-w-2xl text-muted-foreground">
+                Veja pedidos de horario, ajuste sua disponibilidade e compartilhe
+                seu link com tranquilidade.
+              </p>
+            </header>
             <Link
               href="/admin"
-              className="inline-flex min-h-10 items-center gap-2 rounded-md border border-border bg-white px-3 py-2 text-sm font-semibold hover:bg-muted"
+              className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border bg-white px-3 py-2 text-sm font-semibold hover:bg-muted"
             >
               <RefreshCw className="h-4 w-4" />
               Atualizar
             </Link>
-            <Link
-              href="/admin/perfil"
-              className="inline-flex min-h-10 items-center gap-2 rounded-md border border-border bg-white px-3 py-2 text-sm font-semibold hover:bg-muted"
-            >
-              <UserRoundCog className="h-4 w-4" />
-              Perfil
-            </Link>
-            <LogoutButton />
           </div>
-        </div>
-        <header className="mb-7">
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">
-            Admin
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-normal md:text-5xl">
-            Solicitações de agendamento
-          </h1>
-          <p className="mt-3 max-w-2xl text-muted-foreground">
-            Aprove ou rejeite solicitacoes pendentes. A integracao com calendario
-            pode ser adicionada depois deste ponto de aprovacao.
-          </p>
-          <div className="mt-5 max-w-2xl">
+
+          <div className="mb-6 md:hidden">
+            <CurrentUserCard profile={profile} email={user.email} />
+          </div>
+
+          <section className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {summaryCards.map((card) => {
+              const Icon = card.icon;
+              return (
+                <div
+                  key={card.label}
+                  className={`rounded-xl border border-border p-4 shadow-soft ${card.tone}`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-medium text-muted-foreground">{card.label}</p>
+                    <Icon className="h-4 w-4 text-primary" />
+                  </div>
+                  <p className="mt-3 text-3xl font-semibold">{card.value}</p>
+                </div>
+              );
+            })}
+          </section>
+
+          <section className="mb-6 rounded-xl border border-border bg-white p-5 shadow-soft">
+            <div className="mb-3 flex items-center gap-2">
+              <Link2 className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold">Link publico de agendamento</h2>
+            </div>
             <CopyLink value={publicBookingUrl} />
-          </div>
-        </header>
-        <AvailabilitySettings
-          rules={availabilityRules}
-          dateBlocks={dateBlocks}
-        />
-        <AdminBookingFilters
-          counters={counters}
-          currentStatus={currentStatus}
-          currentDate={currentDate}
-          visibleCount={filteredBookings.length}
-        />
-        <NotificationsPanel notifications={notifications} />
-        <AdminBookingList bookings={filteredBookings} />
+          </section>
+
+          <AvailabilitySettings rules={availabilityRules} dateBlocks={dateBlocks} />
+          <AdminBookingFilters
+            currentStatus={currentStatus}
+            currentDate={currentDate}
+            visibleCount={filteredBookings.length}
+          />
+          <NotificationsPanel notifications={notifications} />
+          <AdminBookingList bookings={filteredBookings} />
+        </div>
       </div>
     </main>
   );

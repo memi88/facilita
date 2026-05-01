@@ -1,4 +1,4 @@
-# Agenda Inteligente
+# Agenda Leve
 
 Next.js 14 App Router application for booking requests with mocked availability and Supabase persistence.
 
@@ -39,11 +39,9 @@ npm install
    - `supabase/006_profiles_multi_tenant.sql`
    - `supabase/007_fix_availability_rules_multitenant_pk.sql`
 
-4. Create an admin user in Supabase Auth using e-mail/password.
+4. Create a professional account from `/cadastro` or directly in Supabase Auth.
 
-5. Set `ADMIN_EMAILS` with the allowed admin e-mail addresses. Separate multiple e-mails with commas. If it is empty, any authenticated Supabase user can access `/admin`.
-
-6. Start the app:
+5. Start the app:
 
 ```bash
 npm run dev

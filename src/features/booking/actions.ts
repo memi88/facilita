@@ -3,13 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { isAllowedAdminEmail } from "@/features/auth/permissions";
+import type { BookingRequest } from "@/lib/supabase/types";
 import { getCalendarBusySlots } from "@/features/calendar/provider";
+import { createGoogleCalendarEvent } from "@/features/calendar/google-provider";
 import {
   enqueueBookingNotification,
   enqueueBookingReviewNotifications
 } from "@/features/notifications/queue";
-import { getProfileBySlug } from "@/features/profiles/data";
+import { getProfileBySlug, getProfileByUserId } from "@/features/profiles/data";
 import type { BookingActionState, StatusActionState } from "./types";
 import {
   getAvailabilityRules,
@@ -18,6 +19,30 @@ import {
   isSlotBlocked
 } from "./availability-data";
 import { bookingRequestSchema, statusUpdateSchema } from "./validation";
+
+async function saveGoogleCalendarEvent(booking: BookingRequest) {
+  if (booking.google_event_id) {
+    return true;
+  }
+
+  const googleEvent = await createGoogleCalendarEvent(booking.profile_id, booking);
+
+  if (!googleEvent?.id) {
+    return false;
+  }
+
+  const supabase = createSupabaseAdminClient();
+  const { error } = await supabase
+    .from("booking_requests")
+    .update({
+      google_event_id: googleEvent.id,
+      google_event_link: googleEvent.htmlLink ?? null,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", booking.id);
+
+  return !error;
+}
 
 export async function createBookingRequest(
   _previousState: BookingActionState,
@@ -163,7 +188,8 @@ export async function createBookingRequest(
 
   return {
     ok: true,
-    message: "Solicitacao enviada. Voce recebera a confirmacao pelo WhatsApp.",
+    message:
+      "Sua solicitacao foi enviada. Em breve voce recebera a confirmacao pelo WhatsApp.",
     bookingId: data.id
   };
 }
@@ -190,10 +216,19 @@ export async function updateBookingStatus(
     data: { user }
   } = await serverSupabase.auth.getUser();
 
-  if (!user || !isAllowedAdminEmail(user.email)) {
+  if (!user) {
     return {
       ok: false,
       message: "Voce nao tem permissao para atualizar esta solicitacao."
+    };
+  }
+
+  const profile = await getProfileByUserId(user.id);
+
+  if (!profile) {
+    return {
+      ok: false,
+      message: "Perfil nao encontrado."
     };
   }
 
@@ -212,6 +247,7 @@ export async function updateBookingStatus(
       updated_at: reviewedAt
     })
     .eq("id", parsed.data.id)
+    .eq("profile_id", profile.id)
     .select("*")
     .single();
 
@@ -222,6 +258,22 @@ export async function updateBookingStatus(
     };
   }
 
+  if (updatedBooking.status === "approved" && !updatedBooking.google_event_id) {
+    try {
+      await saveGoogleCalendarEvent(updatedBooking);
+    } catch (eventError) {
+      console.error("[booking] Google Calendar event creation failed", eventError);
+      revalidatePath("/admin");
+      revalidatePath("/agendar");
+
+      return {
+        ok: false,
+        message:
+          "Status aprovado, mas nao foi possivel criar o evento no Google Calendar."
+      };
+    }
+  }
+
   await enqueueBookingReviewNotifications(updatedBooking);
 
   revalidatePath("/admin");
@@ -230,5 +282,87 @@ export async function updateBookingStatus(
   return {
     ok: true,
     message: "Status atualizado."
+  };
+}
+
+export async function createCalendarEventForBooking(
+  _previousState: StatusActionState,
+  formData: FormData
+): Promise<StatusActionState> {
+  const bookingId = String(formData.get("id") || "").trim();
+
+  if (!bookingId) {
+    return {
+      ok: false,
+      message: "Agendamento nao encontrado."
+    };
+  }
+
+  const serverSupabase = createSupabaseServerClient();
+  const {
+    data: { user }
+  } = await serverSupabase.auth.getUser();
+
+  if (!user) {
+    return {
+      ok: false,
+      message: "Voce nao tem permissao para criar este evento."
+    };
+  }
+
+  const profile = await getProfileByUserId(user.id);
+
+  if (!profile) {
+    return {
+      ok: false,
+      message: "Perfil nao encontrado."
+    };
+  }
+
+  const adminSupabase = createSupabaseAdminClient();
+  const { data: booking, error } = await adminSupabase
+    .from("booking_requests")
+    .select("*")
+    .eq("id", bookingId)
+    .eq("profile_id", profile.id)
+    .single();
+
+  if (error || !booking) {
+    return {
+      ok: false,
+      message: "Agendamento nao encontrado."
+    };
+  }
+
+  if (booking.status !== "approved") {
+    return {
+      ok: false,
+      message: "Aprove o agendamento antes de criar o evento."
+    };
+  }
+
+  try {
+    const created = await saveGoogleCalendarEvent(booking);
+
+    if (!created) {
+      return {
+        ok: false,
+        message: "Conecte o Google Calendar antes de criar o evento."
+      };
+    }
+  } catch (eventError) {
+    console.error("[booking] Google Calendar event creation failed", eventError);
+    return {
+      ok: false,
+      message: "Nao foi possivel criar o evento no Google Calendar."
+    };
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/agendar");
+
+  return {
+    ok: true,
+    message: "Evento criado no Google Calendar."
   };
 }

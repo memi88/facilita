@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { isAllowedAdminEmail } from "@/features/auth/permissions";
 import { getProfileByUserId } from "@/features/profiles/data";
 import { weekDays } from "./constants";
 
@@ -18,7 +17,7 @@ async function getAuthorizedProfileId() {
     data: { user }
   } = await supabase.auth.getUser();
 
-  if (!user || !isAllowedAdminEmail(user.email)) {
+  if (!user) {
     return null;
   }
 
@@ -125,7 +124,9 @@ export async function addDateBlock(
 }
 
 export async function removeDateBlock(formData: FormData) {
-  if (!(await getAuthorizedProfileId())) {
+  const profileId = await getAuthorizedProfileId();
+
+  if (!profileId) {
     return;
   }
 
@@ -136,7 +137,11 @@ export async function removeDateBlock(formData: FormData) {
   }
 
   const supabase = createSupabaseAdminClient();
-  await supabase.from("availability_date_blocks").delete().eq("id", id);
+  await supabase
+    .from("availability_date_blocks")
+    .delete()
+    .eq("id", id)
+    .eq("profile_id", profileId);
 
   revalidatePath("/admin");
   revalidatePath("/agendar");

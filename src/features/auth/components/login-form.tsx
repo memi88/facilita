@@ -12,7 +12,7 @@ function LoginButton() {
   return (
     <Button type="submit" disabled={pending} className="w-full">
       <LogIn className="h-4 w-4" />
-      {pending ? "Entrando..." : "Entrar"}
+      {pending ? "Entrando..." : "Entrar na minha agenda"}
     </Button>
   );
 }

@@ -3,10 +3,10 @@
 import { useEffect } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CalendarDays, Clock, MessageSquareText } from "lucide-react";
+import { CalendarDays, CheckCircle2, Clock, MessageSquareText } from "lucide-react";
 import { useFormState } from "react-dom";
 import { Button } from "@/components/ui/button";
-import { Field, Input, Select, Textarea } from "@/components/ui/field";
+import { Field, Input, Textarea } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 import { createBookingRequest } from "../actions";
 import { appointmentTypes } from "../constants";
@@ -34,6 +34,7 @@ export function BookingForm({
   const [selectedDate, setSelectedDate] = useState(days[0]?.date ?? "");
   const slots = availabilityByDate[selectedDate] ?? [];
   const [selectedTime, setSelectedTime] = useState(getFirstAvailableTime(slots));
+  const [appointmentType, setAppointmentType] = useState(appointmentTypes[0].value);
   const [state, formAction] = useFormState(createBookingRequest, {
     ok: false,
     message: "",
@@ -58,16 +59,17 @@ export function BookingForm({
       <input type="hidden" name="profileSlug" value={profileSlug} />
       <input type="hidden" name="selectedDate" value={selectedDate} />
       <input type="hidden" name="selectedTime" value={selectedTime} />
+      <input type="hidden" name="appointmentType" value={appointmentType} />
 
-      <section className="rounded-lg border border-border bg-white p-5 shadow-soft">
+      <section className="rounded-xl border border-border bg-white p-5 shadow-soft md:p-6">
         <div className="mb-5 flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <CalendarDays className="h-5 w-5" />
           </span>
           <div>
-            <h2 className="text-lg font-semibold">Escolha a data</h2>
+            <h2 className="text-lg font-semibold">Escolha um dia</h2>
             <p className="text-sm text-muted-foreground">
-              Horarios pendentes ou aprovados ja ficam bloqueados.
+              Mostramos apenas horarios livres na agenda.
             </p>
           </div>
         </div>
@@ -88,12 +90,12 @@ export function BookingForm({
         </div>
 
         <div className="mt-7 flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-md bg-accent/15 text-accent-foreground">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/15 text-accent-foreground">
             <Clock className="h-5 w-5" />
           </span>
           <div>
             <h2 className="text-lg font-semibold">Horarios disponiveis</h2>
-            <p className="text-sm text-muted-foreground">Selecione um horario para enviar.</p>
+            <p className="text-sm text-muted-foreground">Selecione o melhor horario para voce.</p>
           </div>
         </div>
 
@@ -113,25 +115,50 @@ export function BookingForm({
               </Button>
             ))
           ) : (
-            <p className="col-span-full rounded-md border border-border bg-muted p-4 text-sm text-muted-foreground">
+            <p className="col-span-full rounded-xl border border-border bg-muted p-4 text-sm text-muted-foreground">
               Nao ha horarios mockados para esta data.
             </p>
           )}
         </div>
       </section>
 
-      <section className="rounded-lg border border-border bg-white p-5 shadow-soft">
+      <section className="rounded-xl border border-border bg-white p-5 shadow-soft md:p-6">
         <div className="mb-5 flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <MessageSquareText className="h-5 w-5" />
           </span>
           <div>
-            <h2 className="text-lg font-semibold">Dados do agendamento</h2>
-            <p className="text-sm text-muted-foreground">A solicitacao fica pendente.</p>
+            <h2 className="text-lg font-semibold">Seus dados</h2>
+            <p className="text-sm text-muted-foreground">A profissional confirma o horario depois.</p>
           </div>
         </div>
 
         <div className="grid gap-4">
+          <div>
+            <p className="mb-2 text-sm font-medium text-foreground">Tipo de atendimento</p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {appointmentTypes.map((type) => {
+                const selected = appointmentType === type.value;
+
+                return (
+                  <button
+                    key={type.value}
+                    type="button"
+                    onClick={() => setAppointmentType(type.value)}
+                    className={cn(
+                      "flex min-h-16 items-center justify-between gap-3 rounded-xl border px-3 py-3 text-left text-sm font-semibold transition",
+                      selected
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-white text-foreground hover:bg-muted"
+                    )}
+                  >
+                    {type.label}
+                    {selected ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : null}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           <Field label="Nome">
             <Input name="name" required placeholder="Seu nome completo" />
           </Field>
@@ -144,15 +171,6 @@ export function BookingForm({
               placeholder="5511999999999"
             />
           </Field>
-          <Field label="Tipo de atendimento">
-            <Select name="appointmentType" required defaultValue={appointmentTypes[0].value}>
-              {appointmentTypes.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </Select>
-          </Field>
           <Field label="Observacoes">
             <Textarea name="notes" placeholder="Contexto, objetivo ou preferencia." />
           </Field>
@@ -160,7 +178,7 @@ export function BookingForm({
           {state.message ? (
             <p
               className={cn(
-                "rounded-md px-3 py-2 text-sm",
+                "rounded-xl px-3 py-2 text-sm",
                 state.ok
                   ? "bg-primary/10 text-primary"
                   : "bg-red-50 text-red-700"

@@ -35,15 +35,20 @@ export function SignUpForm() {
       <Field label="Nome completo">
         <Input name="name" required placeholder="Maria Silva" />
       </Field>
-      <Field label="Nome publico da agenda">
-        <Input
-          name="publicName"
-          required
-          placeholder="Dra. Maria Silva"
-          value={publicName}
-          onChange={(event) => setPublicName(event.target.value)}
-        />
-      </Field>
+      <div className="grid gap-4 md:grid-cols-2">
+      <Field label="Nome que aparece na agenda">
+          <Input
+            name="publicName"
+            required
+            placeholder="Dra. Maria Silva"
+            value={publicName}
+            onChange={(event) => setPublicName(event.target.value)}
+          />
+        </Field>
+        <Field label="Profissao">
+          <Input name="profession" placeholder="Psicologa, professora..." />
+        </Field>
+      </div>
       <Field label="Link publico">
         <Input
           name="slug"
@@ -73,7 +78,7 @@ export function SignUpForm() {
       <Field label="E-mail do calendario">
         <Input name="calendarEmail" type="email" placeholder="opcional por enquanto" />
       </Field>
-      <SubmitButton label="Criar conta" />
+      <SubmitButton label="Criar minha agenda" />
       {state.message ? (
         <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
           {state.message}

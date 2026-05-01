@@ -3,6 +3,7 @@ create table if not exists public.profiles (
   user_id uuid unique references auth.users(id) on delete cascade,
   name text not null,
   public_name text not null,
+  profession text,
   phone text,
   slug text not null unique,
   calendar_email text,

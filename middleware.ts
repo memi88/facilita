@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import type { CookieOptions } from "@supabase/ssr";
-import { isAllowedAdminEmail } from "@/features/auth/permissions";
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
@@ -45,12 +44,6 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    if (!isAllowedAdminEmail(user.email)) {
-      const loginUrl = request.nextUrl.clone();
-      loginUrl.pathname = "/login";
-      loginUrl.searchParams.set("error", "unauthorized");
-      return NextResponse.redirect(loginUrl);
-    }
   }
 
   return response;

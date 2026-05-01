@@ -21,6 +21,7 @@ export type Database = {
           user_id: string | null;
           name: string;
           public_name: string;
+          profession: string | null;
           phone: string | null;
           slug: string;
           calendar_email: string | null;
@@ -34,6 +35,7 @@ export type Database = {
           user_id?: string | null;
           name: string;
           public_name: string;
+          profession?: string | null;
           phone?: string | null;
           slug: string;
           calendar_email?: string | null;
@@ -46,6 +48,7 @@ export type Database = {
           user_id?: string | null;
           name?: string;
           public_name?: string;
+          profession?: string | null;
           phone?: string | null;
           slug?: string;
           calendar_email?: string | null;
@@ -69,6 +72,8 @@ export type Database = {
           rejection_reason: string | null;
           reviewed_at: string | null;
           reviewed_by: string | null;
+          google_event_id: string | null;
+          google_event_link: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -85,6 +90,8 @@ export type Database = {
           rejection_reason?: string | null;
           reviewed_at?: string | null;
           reviewed_by?: string | null;
+          google_event_id?: string | null;
+          google_event_link?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -100,6 +107,8 @@ export type Database = {
           rejection_reason?: string | null;
           reviewed_at?: string | null;
           reviewed_by?: string | null;
+          google_event_id?: string | null;
+          google_event_link?: string | null;
           updated_at?: string;
         };
         Relationships: [];

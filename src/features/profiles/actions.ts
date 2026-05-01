@@ -19,6 +19,7 @@ export async function signUpProfessional(
 ): Promise<SignUpState> {
   const name = String(formData.get("name") || "").trim();
   const publicName = String(formData.get("publicName") || "").trim();
+  const profession = String(formData.get("profession") || "").trim();
   const phone = String(formData.get("phone") || "").trim();
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const password = String(formData.get("password") || "");
@@ -58,6 +59,7 @@ export async function signUpProfessional(
     user_id: authResult.data.user.id,
     name,
     public_name: publicName,
+    profession: profession || null,
     phone: phone || null,
     slug,
     calendar_email: calendarEmail || null,
@@ -89,6 +91,7 @@ export async function saveCurrentUserProfile(
 ): Promise<ProfileSetupState> {
   const publicName = String(formData.get("publicName") || "").trim();
   const name = String(formData.get("name") || publicName).trim();
+  const profession = String(formData.get("profession") || "").trim();
   const phone = String(formData.get("phone") || "").trim();
   const calendarEmail = String(formData.get("calendarEmail") || "").trim();
   const googleCalendarId = String(formData.get("googleCalendarId") || "").trim();
@@ -124,6 +127,7 @@ export async function saveCurrentUserProfile(
       user_id: user.id,
       name,
       public_name: publicName,
+      profession: profession || null,
       phone: phone || null,
       slug,
       calendar_email: calendarEmail || null,

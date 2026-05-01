@@ -1,8 +1,10 @@
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { CalendarCheck2 } from "lucide-react";
 import type { BookingRequest } from "@/lib/supabase/types";
 import { bookingStatusLabels } from "../constants";
 import { getAppointmentTypeLabel } from "../formatters";
+import { CalendarEventActionForm } from "./calendar-event-action-form";
 import { StatusActionForm } from "./status-action-form";
 
 function getStatusClass(status: BookingRequest["status"]) {
@@ -98,6 +100,17 @@ export function AdminBookingList({ bookings }: { bookings: BookingRequest[] }) {
                     {booking.reviewed_by ? ` por ${booking.reviewed_by}` : ""}
                   </p>
                 ) : null}
+                {booking.google_event_link ? (
+                  <a
+                    href={booking.google_event_link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+                  >
+                    <CalendarCheck2 className="h-4 w-4" />
+                    Abrir evento no Google Calendar
+                  </a>
+                ) : null}
               </div>
               <div className="grid min-w-56 gap-2 sm:grid-cols-2 lg:grid-cols-1">
                 <StatusActionForm
@@ -110,6 +123,9 @@ export function AdminBookingList({ bookings }: { bookings: BookingRequest[] }) {
                   status="rejected"
                   disabled={isReviewed}
                 />
+                {booking.status === "approved" && !booking.google_event_id ? (
+                  <CalendarEventActionForm id={booking.id} />
+                ) : null}
               </div>
             </div>
           </article>

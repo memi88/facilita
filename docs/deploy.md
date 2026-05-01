@@ -9,7 +9,6 @@ NEXT_PUBLIC_SITE_URL=https://your-domain.com
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-ADMIN_EMAILS=admin@example.com
 GOOGLE_CLIENT_ID=your-google-oauth-client-id
 GOOGLE_CLIENT_SECRET=your-google-oauth-client-secret
 ```
@@ -91,7 +90,6 @@ https://www.googleapis.com/auth/calendar.events
 
 ## Before Real Users
 
-- Set `ADMIN_EMAILS` intentionally.
 - Remove test/mock `MOCK_CALENDAR_BUSY_SLOTS` if not needed.
 - Confirm every professional has a `profiles` row.
 - Keep Google Calendar and WhatsApp providers in mock mode until credentials and costs are approved.

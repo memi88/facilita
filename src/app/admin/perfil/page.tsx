@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { ArrowLeft, UserRoundCog } from "lucide-react";
 import { ProfileForm } from "@/features/profiles/components/profile-form";
 import { CopyLink } from "@/components/ui/copy-link";
-import { GoogleCalendarCard } from "@/features/calendar/components/google-calendar-card";
+import { CurrentUserCard } from "@/features/profiles/components/current-user-card";
 import { getProfileByUserId } from "@/features/profiles/data";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getPublicBookingUrl } from "@/lib/site-url";
@@ -22,7 +22,7 @@ export default async function AdminProfileSetupPage() {
 
   return (
     <main className="min-h-screen px-4 py-6 md:px-8">
-      <section className="mx-auto max-w-3xl rounded-lg border border-border bg-white p-6 shadow-soft">
+      <section className="mx-auto max-w-3xl rounded-xl border border-border bg-white p-6 shadow-soft">
         <Link
           href={profile ? "/admin" : "/"}
           className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
@@ -31,7 +31,7 @@ export default async function AdminProfileSetupPage() {
           {profile ? "Voltar ao admin" : "Inicio"}
         </Link>
         <div className="mb-6 flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <UserRoundCog className="h-5 w-5" />
           </span>
           <div>
@@ -41,13 +41,15 @@ export default async function AdminProfileSetupPage() {
             </p>
           </div>
         </div>
+        <div className="mb-6">
+          <CurrentUserCard profile={profile} email={user.email} />
+        </div>
         {profile ? (
           <div className="mb-6">
             <p className="mb-2 text-sm font-semibold">Link publico atual</p>
             <CopyLink value={getPublicBookingUrl(profile.slug)} />
           </div>
         ) : null}
-        <GoogleCalendarCard profile={profile} />
         <ProfileForm profile={profile} email={user.email} />
       </section>
     </main>

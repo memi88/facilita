@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CalendarCheck2, ShieldCheck } from "lucide-react";
 import { BookingForm } from "@/features/booking/components/booking-form";
 import { getCalendarDays } from "@/features/booking/availability";
 import {
@@ -58,13 +58,32 @@ export default async function PublicBookingPage({
           <ArrowLeft className="h-4 w-4" />
           Inicio
         </Link>
-        <header className="mb-7">
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">
-            {profile.public_name}
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-normal md:text-5xl">
-            Escolha um horario e envie sua solicitacao.
-          </h1>
+        <header className="mb-7 rounded-xl border border-border bg-white p-5 shadow-soft md:p-7">
+          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">
+                Agenda publica
+              </p>
+              <h1 className="mt-2 text-3xl font-semibold tracking-normal md:text-5xl">
+                {profile.public_name}
+              </h1>
+              <p className="mt-2 text-muted-foreground">
+                {profile.profession
+                  ? `${profile.profession}. Escolha um horario e envie sua solicitacao.`
+                  : "Escolha um horario e envie sua solicitacao."}
+              </p>
+            </div>
+            <div className="grid gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <CalendarCheck2 className="h-4 w-4 text-primary" />
+                Solicitacao pendente ate aprovacao
+              </div>
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                Horarios ocupados ficam indisponiveis
+              </div>
+            </div>
+          </div>
         </header>
         <BookingForm
           days={days}

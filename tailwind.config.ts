@@ -22,7 +22,7 @@ const config: Config = {
         "accent-foreground": "hsl(var(--accent-foreground))"
       },
       boxShadow: {
-        soft: "0 14px 50px rgba(15, 23, 42, 0.08)"
+        soft: "0 18px 45px rgba(47, 47, 47, 0.08)"
       }
     }
   },
