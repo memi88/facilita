@@ -94,7 +94,7 @@ export default async function LoginPage({
                   <div>
                     <Eyebrow>Entrar</Eyebrow>
                     <h2 className="mt-1 text-2xl font-semibold tracking-tight">
-                      Entrar na Smart Agenda
+                      Entrar na Facilita
                     </h2>
                     <p className="mt-2 text-sm leading-6 text-muted-foreground">
                       Entre com e-mail e senha da sua conta.

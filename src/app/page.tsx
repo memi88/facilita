@@ -112,10 +112,10 @@ export default async function HomePage() {
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-sm font-semibold">Dra. Ana Moreira</p>
-                  <p className="text-xs text-muted-foreground">agendaleve.com/agendar/ana</p>
+                  <p className="text-xs text-muted-foreground">facilita.com/agendar/ana</p>
                 </div>
                 <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                  Agenda inteligente
+                  Facilita
                 </span>
               </div>
               <div className="mt-5 grid grid-cols-3 gap-2">

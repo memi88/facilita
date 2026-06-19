@@ -13,12 +13,12 @@ const body = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Smart Agenda",
+  title: "Facilita",
   description: "Agendamentos, disponibilidade e tipos de atendimento em um so lugar.",
   icons: {
-    icon: "/logo-agenda-leve-icon.svg",
-    shortcut: "/logo-agenda-leve-icon.svg",
-    apple: "/logo-agenda-leve-icon.svg"
+    icon: "/logo-facilita-icon.svg",
+    shortcut: "/logo-facilita-icon.svg",
+    apple: "/logo-facilita-icon.svg"
   }
 };
 

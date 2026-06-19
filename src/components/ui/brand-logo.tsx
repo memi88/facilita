@@ -10,8 +10,8 @@ export function BrandLogo({
 }) {
   return (
     <Image
-      src={compact ? "/logo-agenda-leve-icon.svg" : "/logo-agenda-leve.svg"}
-      alt="Agenda Leve"
+      src={compact ? "/logo-facilita-icon.svg" : "/logo-facilita.svg"}
+      alt="Facilita"
       width={compact ? 40 : 168}
       height={compact ? 40 : 48}
       priority

@@ -1,4 +1,4 @@
-# Agenda Leve
+# Facilita
 
 Next.js 14 App Router application for booking requests with mocked availability and Supabase persistence.
 
