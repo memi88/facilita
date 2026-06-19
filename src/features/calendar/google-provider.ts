@@ -1,7 +1,6 @@
 import { parseISO } from "date-fns";
-import { getGoogleCalendarConnection, getValidGoogleAccessToken } from "./google-data";
-import { appointmentTypes } from "@/features/booking/constants";
 import type { BookingRequest } from "@/lib/supabase/types";
+import { getGoogleCalendarConnection, getValidGoogleAccessToken } from "./google-data";
 import type { CalendarBusySlot, CalendarProvider } from "./types";
 
 const calendarTimeZone = "America/Sao_Paulo";
@@ -81,30 +80,32 @@ function intervalToBusySlots(start: string, end: string): CalendarBusySlot[] {
 }
 
 export const googleCalendarProvider: CalendarProvider = {
-  async getBusySlots({ profile, startDate, endDate }) {
-    const connection = await getGoogleCalendarConnection(profile.id);
+  async getBusySlots({ profile, startDate, endDate, connection, accessToken }) {
+    const resolvedConnection =
+      connection ?? (await getGoogleCalendarConnection(profile.id));
 
-    if (!connection) {
+    if (!resolvedConnection) {
       return [];
     }
 
-    const accessToken = await getValidGoogleAccessToken(connection);
+    const token =
+      accessToken ?? (await getValidGoogleAccessToken(resolvedConnection));
 
-    if (!accessToken) {
+    if (!token) {
       return [];
     }
 
     const response = await fetch("https://www.googleapis.com/calendar/v3/freeBusy", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
         timeMin: `${startDate}T00:00:00-03:00`,
         timeMax: `${endDate}T23:59:59-03:00`,
         timeZone: calendarTimeZone,
-        items: [{ id: connection.calendar_id || "primary" }]
+        items: [{ id: resolvedConnection.calendar_id || "primary" }]
       })
     });
 
@@ -116,7 +117,7 @@ export const googleCalendarProvider: CalendarProvider = {
     const data = (await response.json()) as {
       calendars?: Record<string, { busy?: Array<{ start: string; end: string }> }>;
     };
-    const calendar = data.calendars?.[connection.calendar_id || "primary"];
+    const calendar = data.calendars?.[resolvedConnection.calendar_id || "primary"];
 
     return (calendar?.busy ?? []).flatMap((busy) =>
       intervalToBusySlots(busy.start, busy.end)
@@ -124,8 +125,8 @@ export const googleCalendarProvider: CalendarProvider = {
   }
 };
 
-function getAppointmentTypeLabel(value: BookingRequest["appointment_type"]) {
-  return appointmentTypes.find((option) => option.value === value)?.label ?? value;
+function getServiceLabel(booking: BookingRequest) {
+  return booking.service_type_name || booking.appointment_type || "Atendimento";
 }
 
 function buildEventDateTime(date: string, time: string, durationInMinutes: number) {
@@ -155,12 +156,17 @@ export async function createGoogleCalendarEvent(
     return null;
   }
 
-  const eventDateTime = buildEventDateTime(booking.date, booking.time, 30);
-  const appointmentType = getAppointmentTypeLabel(booking.appointment_type);
+  const eventDateTime = buildEventDateTime(
+    booking.date,
+    booking.time,
+    booking.service_type_duration_minutes || 30
+  );
+  const appointmentType = getServiceLabel(booking);
   const description = [
     `Cliente: ${booking.name}`,
     `WhatsApp: ${booking.phone}`,
     `Tipo: ${appointmentType}`,
+    `Duracao: ${booking.service_type_duration_minutes} minutos`,
     booking.notes ? `Observacoes: ${booking.notes}` : null
   ]
     .filter(Boolean)

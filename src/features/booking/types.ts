@@ -1,4 +1,4 @@
-import type { AppointmentType, BookingStatus } from "@/lib/supabase/types";
+import type { AppointmentType, BookingStatus, ServiceTypeRow } from "@/lib/supabase/types";
 
 export type CalendarDay = {
   date: string;
@@ -31,3 +31,8 @@ export type AppointmentTypeOption = {
   value: AppointmentType;
   label: string;
 };
+
+export type BookingServiceType = Pick<
+  ServiceTypeRow,
+  "id" | "name" | "description" | "duration_minutes" | "sort_order"
+>;

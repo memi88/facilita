@@ -3,7 +3,7 @@ import type {
   AvailabilityDateBlock,
   AvailabilityRule
 } from "@/lib/supabase/types";
-import { getDay, parseISO } from "date-fns";
+import { addMinutes, format, getDay, parseISO } from "date-fns";
 import type { TimeSlot } from "./types";
 
 export type BlockedSlotsByDate = Record<string, string[]>;
@@ -43,6 +43,24 @@ export function getDefaultAvailabilityRules(profileId: string): AvailabilityRule
 
 function normalizeTime(time: string) {
   return time.slice(0, 5);
+}
+
+export function buildOccupiedSlotTimes(
+  date: string,
+  time: string,
+  durationMinutes: number
+) {
+  const start = parseISO(`${date}T${normalizeTime(time)}:00`);
+  const end = addMinutes(start, durationMinutes);
+  const slots: string[] = [];
+  let cursor = start;
+
+  while (cursor < end) {
+    slots.push(format(cursor, "HH:mm"));
+    cursor = addMinutes(cursor, 30);
+  }
+
+  return slots;
 }
 
 export async function getAvailabilityRules(profileId: string): Promise<AvailabilityRule[]> {
@@ -154,7 +172,7 @@ export async function getBlockedSlotsByDate(
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("booking_requests")
-    .select("date,time")
+    .select("date,time,service_type_duration_minutes")
     .eq("profile_id", profileId)
     .in("status", ["pending", "approved"])
     .gte("date", startDate)
@@ -165,8 +183,12 @@ export async function getBlockedSlotsByDate(
   }
 
   return data.reduce<BlockedSlotsByDate>((accumulator, booking) => {
-    const time = normalizeTime(booking.time);
-    accumulator[booking.date] = [...(accumulator[booking.date] ?? []), time];
+    const occupiedTimes = buildOccupiedSlotTimes(
+      booking.date,
+      booking.time,
+      booking.service_type_duration_minutes ?? 30
+    );
+    accumulator[booking.date] = [...(accumulator[booking.date] ?? []), ...occupiedTimes];
     return accumulator;
   }, {});
 }
@@ -187,20 +209,33 @@ export async function isDateBlocked(profileId: string, date: string) {
   return data.length > 0;
 }
 
-export async function isSlotBlocked(profileId: string, date: string, time: string) {
+export async function isSlotBlocked(
+  profileId: string,
+  date: string,
+  time: string,
+  durationMinutes = 30
+) {
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("booking_requests")
-    .select("id")
+    .select("time,service_type_duration_minutes")
     .eq("profile_id", profileId)
-    .eq("date", date)
-    .eq("time", time)
     .in("status", ["pending", "approved"])
-    .limit(1);
+    .eq("date", date);
 
   if (error) {
     throw new Error("Could not verify booking slot.");
   }
 
-  return data.length > 0;
+  const requestedTimes = new Set(buildOccupiedSlotTimes(date, time, durationMinutes));
+
+  return data.some((booking) => {
+    const occupiedTimes = buildOccupiedSlotTimes(
+      date,
+      booking.time,
+      booking.service_type_duration_minutes ?? 30
+    );
+
+    return occupiedTimes.some((slot) => requestedTimes.has(slot));
+  });
 }

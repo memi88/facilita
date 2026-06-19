@@ -34,14 +34,14 @@ export function NotificationsPanel({
   notifications: BookingNotificationWithBooking[];
 }) {
   return (
-    <section className="mb-7 rounded-lg border border-border bg-white p-5 shadow-soft">
+    <section className="rounded-[1.25rem] border border-border/80 bg-white p-5 shadow-soft">
       <div className="mb-5 flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">
+        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
           <Bell className="h-5 w-5" />
         </span>
         <div>
-          <h2 className="text-lg font-semibold">Fila de notificações</h2>
-          <p className="text-sm text-muted-foreground">
+          <h2 className="text-lg font-semibold tracking-tight">Fila de notificações</h2>
+          <p className="text-sm leading-6 text-muted-foreground">
             Preparada para WhatsApp. O envio real ainda está em modo mock.
           </p>
         </div>
@@ -52,7 +52,7 @@ export function NotificationsPanel({
           notifications.map((notification) => (
             <article
               key={notification.id}
-              className="rounded-md border border-border p-3"
+              className="rounded-2xl border border-border/80 p-3"
             >
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div>
@@ -101,7 +101,7 @@ export function NotificationsPanel({
             </article>
           ))
         ) : (
-          <p className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
+          <p className="rounded-2xl border border-dashed border-border bg-[rgba(37,99,235,0.04)] px-3 py-3 text-sm text-muted-foreground">
             Nenhuma notificação enfileirada.
           </p>
         )}

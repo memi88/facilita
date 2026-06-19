@@ -12,6 +12,17 @@ export type AppointmentType =
   | "strategy_session"
   | "support";
 
+export type ServiceType = {
+  id: string;
+  profile_id: string;
+  name: string;
+  description: string | null;
+  duration_minutes: number;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -27,6 +38,7 @@ export type Database = {
           calendar_email: string | null;
           google_calendar_id: string | null;
           calendar_connected: boolean;
+          calendar_email_is_account_email: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -41,6 +53,7 @@ export type Database = {
           calendar_email?: string | null;
           google_calendar_id?: string | null;
           calendar_connected?: boolean;
+          calendar_email_is_account_email?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -54,6 +67,7 @@ export type Database = {
           calendar_email?: string | null;
           google_calendar_id?: string | null;
           calendar_connected?: boolean;
+          calendar_email_is_account_email?: boolean;
           updated_at?: string;
         };
         Relationships: [];
@@ -64,7 +78,7 @@ export type Database = {
           profile_id: string;
           name: string;
           phone: string;
-          appointment_type: AppointmentType;
+          appointment_type: string | null;
           notes: string | null;
           date: string;
           time: string;
@@ -74,6 +88,15 @@ export type Database = {
           reviewed_by: string | null;
           google_event_id: string | null;
           google_event_link: string | null;
+          service_type_id: string | null;
+          service_type_name: string;
+          service_type_duration_minutes: number;
+          cancel_reason: string | null;
+          cancelled_at: string | null;
+          cancelled_by: string | null;
+          reschedule_reason: string | null;
+          rescheduled_at: string | null;
+          rescheduled_by: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -82,7 +105,7 @@ export type Database = {
           profile_id: string;
           name: string;
           phone: string;
-          appointment_type: AppointmentType;
+          appointment_type?: string | null;
           notes?: string | null;
           date: string;
           time: string;
@@ -92,6 +115,15 @@ export type Database = {
           reviewed_by?: string | null;
           google_event_id?: string | null;
           google_event_link?: string | null;
+          service_type_id?: string | null;
+          service_type_name: string;
+          service_type_duration_minutes: number;
+          cancel_reason?: string | null;
+          cancelled_at?: string | null;
+          cancelled_by?: string | null;
+          reschedule_reason?: string | null;
+          rescheduled_at?: string | null;
+          rescheduled_by?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -99,7 +131,7 @@ export type Database = {
           profile_id?: string;
           name?: string;
           phone?: string;
-          appointment_type?: AppointmentType;
+          appointment_type?: string | null;
           notes?: string | null;
           date?: string;
           time?: string;
@@ -109,6 +141,15 @@ export type Database = {
           reviewed_by?: string | null;
           google_event_id?: string | null;
           google_event_link?: string | null;
+          service_type_id?: string | null;
+          service_type_name?: string;
+          service_type_duration_minutes?: number;
+          cancel_reason?: string | null;
+          cancelled_at?: string | null;
+          cancelled_by?: string | null;
+          reschedule_reason?: string | null;
+          rescheduled_at?: string | null;
+          rescheduled_by?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -213,34 +254,62 @@ export type Database = {
         Row: {
           id: string;
           profile_id: string;
+          label: string;
           google_email: string | null;
           calendar_id: string;
           access_token: string | null;
           refresh_token: string | null;
           token_expires_at: string | null;
           scope: string | null;
+          is_primary: boolean;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id?: string;
           profile_id: string;
+          label?: string;
           google_email?: string | null;
           calendar_id?: string;
           access_token?: string | null;
           refresh_token?: string | null;
           token_expires_at?: string | null;
           scope?: string | null;
+          is_primary?: boolean;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
+          label?: string;
           google_email?: string | null;
           calendar_id?: string;
           access_token?: string | null;
           refresh_token?: string | null;
           token_expires_at?: string | null;
           scope?: string | null;
+          is_primary?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      service_types: {
+        Row: ServiceType;
+        Insert: {
+          id?: string;
+          profile_id: string;
+          name: string;
+          description?: string | null;
+          duration_minutes: number;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          profile_id?: string;
+          name?: string;
+          description?: string | null;
+          duration_minutes?: number;
+          sort_order?: number;
           updated_at?: string;
         };
         Relationships: [];
@@ -264,3 +333,4 @@ export type BookingNotification =
   Database["public"]["Tables"]["booking_notifications"]["Row"];
 export type GoogleCalendarConnection =
   Database["public"]["Tables"]["google_calendar_connections"]["Row"];
+export type ServiceTypeRow = Database["public"]["Tables"]["service_types"]["Row"];

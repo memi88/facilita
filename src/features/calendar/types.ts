@@ -1,4 +1,5 @@
 import type { Profile } from "@/lib/supabase/types";
+import type { GoogleCalendarConnection } from "@/lib/supabase/types";
 
 export type CalendarBusySlot = {
   date: string;
@@ -11,5 +12,7 @@ export type CalendarProvider = {
     profile: Profile;
     startDate: string;
     endDate: string;
+    connection?: GoogleCalendarConnection;
+    accessToken?: string;
   }): Promise<CalendarBusySlot[]>;
 };

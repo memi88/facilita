@@ -7,7 +7,6 @@ import type {
 } from "@/lib/supabase/types";
 import {
   formatBookingDate,
-  getAppointmentTypeLabel
 } from "@/features/booking/formatters";
 import { sendWhatsAppNotificationMock } from "./provider";
 
@@ -33,7 +32,7 @@ function buildPayload(type: NotificationType, booking: BookingRequest) {
     name: booking.name,
     date: formatBookingDate(booking.date),
     time: booking.time,
-    appointmentType: getAppointmentTypeLabel(booking.appointment_type)
+    appointmentType: booking.service_type_name
   };
 
   if (type === "booking_rejected") {

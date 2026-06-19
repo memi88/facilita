@@ -1,12 +1,5 @@
 import { z } from "zod";
 
-export const appointmentTypeValues = [
-  "initial_consultation",
-  "follow_up",
-  "strategy_session",
-  "support"
-] as const;
-
 function normalizePhone(value: unknown) {
   return String(value ?? "").replace(/\D/g, "");
 }
@@ -22,7 +15,7 @@ export const bookingRequestSchema = z.object({
         .max(13, "Informe um WhatsApp valido.")
         .regex(/^\d+$/, "Use somente numeros no WhatsApp.")
     ),
-  appointmentType: z.enum(appointmentTypeValues),
+  serviceTypeId: z.string().min(1, "Selecione um tipo de atendimento."),
   notes: z.string().trim().max(700, "Use no maximo 700 caracteres.").optional(),
   selectedDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   selectedTime: z.string().regex(/^\d{2}:\d{2}$/)

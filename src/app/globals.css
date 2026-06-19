@@ -3,28 +3,40 @@
 @tailwind utilities;
 
 :root {
-  --background: 40 30% 97%;
-  --foreground: 0 0% 18%;
-  --muted: 40 18% 90%;
-  --muted-foreground: 70 6% 38%;
-  --border: 40 16% 84%;
-  --primary: 131 15% 49%;
+  --background: 252 100% 98%;
+  --foreground: 225 42% 13%;
+  --muted: 232 100% 95%;
+  --muted-foreground: 226 12% 34%;
+  --border: 220 26% 91%;
+  --primary: 221 100% 39%;
   --primary-foreground: 0 0% 100%;
-  --accent: 82 22% 62%;
-  --accent-foreground: 91 20% 20%;
+  --accent: 215 85% 58%;
+  --accent-foreground: 225 42% 13%;
+  --radius: 16px;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
-  background: hsl(var(--background));
+  min-height: 100vh;
+  background-color: hsl(var(--background));
+  background-image:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 26%),
+    radial-gradient(circle at 85% 15%, rgba(80, 95, 118, 0.08), transparent 18%),
+    linear-gradient(to bottom, rgba(250, 248, 255, 0.92), rgba(250, 248, 255, 1));
+  background-attachment: fixed;
   color: hsl(var(--foreground));
   font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+    var(--font-body), Inter, ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-rendering: optimizeLegibility;
 }
 
 button,
@@ -32,4 +44,20 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family:
+    var(--font-heading), "Hanken Grotesk", Inter, ui-sans-serif, system-ui,
+    sans-serif;
+}
+
+::selection {
+  background: rgba(37, 99, 235, 0.2);
+  color: hsl(var(--foreground));
 }

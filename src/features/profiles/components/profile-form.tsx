@@ -23,24 +23,34 @@ function SaveProfileButton() {
 
 export function ProfileForm({
   profile,
-  email
+  email,
+  returnTo = "/admin/perfil?tab=perfil"
 }: {
   profile: Profile | null;
   email?: string | null;
+  returnTo?: string;
 }) {
   const [state, formAction] = useFormState(saveCurrentUserProfile, {
     message: ""
   });
   const [publicName, setPublicName] = useState(profile?.public_name ?? "");
   const [slug, setSlug] = useState(profile?.slug ?? "");
+  const [calendarEmail, setCalendarEmail] = useState(
+    profile?.calendar_email ?? email ?? ""
+  );
+  const [useAccountEmail, setUseAccountEmail] = useState(
+    Boolean(profile?.calendar_email_is_account_email)
+  );
   const normalizedSlug = useMemo(
     () => normalizeSlug(slug || publicName),
     [publicName, slug]
   );
   const calendarConnected = Boolean(profile?.calendar_connected);
+  const calendarEmailValue = useAccountEmail ? email ?? "" : calendarEmail;
 
   return (
     <form action={formAction} className="grid gap-5">
+      <input type="hidden" name="returnTo" value={returnTo} />
       <div className="grid gap-4 md:grid-cols-2">
         <Field label="Nome completo">
           <Input
@@ -79,7 +89,7 @@ export function ProfileForm({
           />
         </Field>
         <div className="flex items-end">
-          <p className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
+          <p className="rounded-2xl border border-border/80 bg-[rgba(37,99,235,0.04)] px-3 py-2 text-sm text-muted-foreground">
             /agendar/{normalizedSlug || "seu-link"}
           </p>
         </div>
@@ -93,12 +103,51 @@ export function ProfileForm({
             placeholder="+55 11 99999-9999"
           />
         </Field>
-        <Field label="E-mail da conta">
-          <Input value={email ?? ""} disabled />
+        <Field label="E-mail principal da agenda">
+          <div className="grid gap-2">
+            <Input
+              name="calendarEmail"
+              type="email"
+              value={calendarEmailValue}
+              onChange={(event) => {
+                setCalendarEmail(event.target.value);
+                setUseAccountEmail(false);
+              }}
+              readOnly={useAccountEmail}
+              placeholder="agenda@dominio.com"
+            />
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                <input
+                  type="checkbox"
+                  name="calendarEmailIsAccountEmail"
+                  checked={useAccountEmail}
+                  onChange={(event) => {
+                    setUseAccountEmail(event.target.checked);
+                    if (event.target.checked) {
+                      setCalendarEmail(email ?? "");
+                    }
+                  }}
+                  className="h-4 w-4 rounded border-border"
+                />
+                Usar e-mail do cadastro
+              </label>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  setUseAccountEmail(true);
+                  setCalendarEmail(email ?? "");
+                }}
+              >
+                Usar e-mail do cadastro
+              </Button>
+            </div>
+          </div>
         </Field>
       </div>
 
-      <div className="rounded-lg border border-border bg-muted/40 p-4">
+      <div className="rounded-[1.25rem] border border-border/80 bg-[rgba(37,99,235,0.04)] p-4">
         <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
             <div className="flex items-center gap-2">
@@ -109,11 +158,13 @@ export function ProfileForm({
               {calendarConnected
                 ? `Conectado${profile?.calendar_email ? ` em ${profile.calendar_email}` : ""}.`
                 : "Conecte a conta Google para bloquear horarios ocupados automaticamente."}
+              {" "}
+              Outras agendas conectadas ficam logo abaixo.
             </p>
           </div>
           {profile ? (
             <Link
-              href="/api/google-calendar/connect"
+              href={`/api/google-calendar/connect?returnTo=${encodeURIComponent(returnTo)}`}
               className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-soft transition hover:brightness-95"
             >
               {calendarConnected ? (
@@ -131,14 +182,6 @@ export function ProfileForm({
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="E-mail do calendario">
-            <Input
-              name="calendarEmail"
-              type="email"
-              defaultValue={profile?.calendar_email ?? ""}
-              placeholder="opcional por enquanto"
-            />
-          </Field>
           <Field label="Google Calendar ID">
             <Input
               name="googleCalendarId"
@@ -146,6 +189,10 @@ export function ProfileForm({
               placeholder="primary"
             />
           </Field>
+          <div className="rounded-2xl border border-border/80 bg-white px-3 py-2 text-sm text-muted-foreground">
+            Se o e-mail principal estiver marcado como o do cadastro, ele tambem e usado na
+            autorizacao do Google.
+          </div>
         </div>
       </div>
 

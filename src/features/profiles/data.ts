@@ -1,7 +1,7 @@
 import { unstable_noStore as noStore } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import type { Profile } from "@/lib/supabase/types";
+import type { Profile, ServiceTypeRow } from "@/lib/supabase/types";
 
 export async function getProfileByUserId(userId: string): Promise<Profile | null> {
   noStore();
@@ -41,6 +41,47 @@ export async function getProfileBySlug(slug: string): Promise<Profile | null> {
     .from("profiles")
     .select("*")
     .eq("slug", slug)
+    .single();
+
+  if (error) {
+    return null;
+  }
+
+  return data;
+}
+
+export async function getServiceTypesByProfileId(
+  profileId: string
+): Promise<ServiceTypeRow[]> {
+  noStore();
+
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("service_types")
+    .select("*")
+    .eq("profile_id", profileId)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    return [];
+  }
+
+  return data;
+}
+
+export async function getServiceTypeById(
+  profileId: string,
+  id: string
+): Promise<ServiceTypeRow | null> {
+  noStore();
+
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("service_types")
+    .select("*")
+    .eq("profile_id", profileId)
+    .eq("id", id)
     .single();
 
   if (error) {

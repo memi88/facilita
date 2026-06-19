@@ -10,16 +10,21 @@ import {
   enqueueBookingNotification,
   enqueueBookingReviewNotifications
 } from "@/features/notifications/queue";
-import { getProfileBySlug, getProfileByUserId } from "@/features/profiles/data";
+import {
+  getProfileBySlug,
+  getProfileByUserId,
+  getServiceTypeById,
+  getServiceTypesByProfileId
+} from "@/features/profiles/data";
 import type { BookingActionState, StatusActionState } from "./types";
 import {
   getAvailabilityRules,
+  getBlockedSlotsByDate,
   getConfiguredSlotsForDate,
   isDateBlocked,
-  isSlotBlocked
+  buildOccupiedSlotTimes
 } from "./availability-data";
 import { bookingRequestSchema, statusUpdateSchema } from "./validation";
-
 async function saveGoogleCalendarEvent(booking: BookingRequest) {
   if (booking.google_event_id) {
     return true;
@@ -50,6 +55,7 @@ export async function createBookingRequest(
 ): Promise<BookingActionState> {
   const profileId = String(formData.get("profileId") || "").trim();
   const profileSlug = String(formData.get("profileSlug") || "").trim();
+  const serviceTypeId = String(formData.get("serviceTypeId") || "").trim();
 
   if (!profileId) {
     return {
@@ -61,7 +67,7 @@ export async function createBookingRequest(
   const parsed = bookingRequestSchema.safeParse({
     name: formData.get("name"),
     phone: formData.get("phone"),
-    appointmentType: formData.get("appointmentType"),
+    serviceTypeId,
     notes: formData.get("notes") || undefined,
     selectedDate: formData.get("selectedDate"),
     selectedTime: formData.get("selectedTime")
@@ -84,15 +90,37 @@ export async function createBookingRequest(
     };
   }
 
+  const serviceType = await getServiceTypeById(profileId, serviceTypeId);
+  const availableServiceTypes = await getServiceTypesByProfileId(profileId);
+
+  if (!serviceType && availableServiceTypes.length) {
+    return {
+      ok: false,
+      message: "Selecione um tipo de atendimento valido."
+    };
+  }
+
+  const resolvedServiceType =
+    serviceType ??
+    ({
+      id: null,
+      name: "Consulta inicial",
+      description: "Atendimento padrão criado automaticamente para a agenda.",
+      duration_minutes: 60,
+      sort_order: 0
+    } as const);
+
   let rules;
   let dateBlocked;
   let calendarBusySlots;
+  let blockedSlots;
 
   try {
-    [rules, dateBlocked, calendarBusySlots] = await Promise.all([
+    [rules, dateBlocked, calendarBusySlots, blockedSlots] = await Promise.all([
       getAvailabilityRules(profileId),
       isDateBlocked(profileId, booking.selectedDate),
-      getCalendarBusySlots(profile, booking.selectedDate, booking.selectedDate)
+      getCalendarBusySlots(profile, booking.selectedDate, booking.selectedDate),
+      getBlockedSlotsByDate(profileId, booking.selectedDate, booking.selectedDate)
     ]);
   } catch (error) {
     console.error("[booking] Availability check failed", error);
@@ -128,22 +156,18 @@ export async function createBookingRequest(
     };
   }
 
-  const supabase = createSupabaseAdminClient();
-  let slotBlocked;
-
-  try {
-    slotBlocked = await isSlotBlocked(
-      profileId,
-      booking.selectedDate,
-      booking.selectedTime
-    );
-  } catch (error) {
-    console.error("[booking] Slot conflict check failed", error);
-    return {
-      ok: false,
-      message: "Nao foi possivel confirmar este horario agora."
-    };
-  }
+  const occupiedTimes = new Set([
+    ...(blockedSlots?.[booking.selectedDate] ?? []),
+    ...calendarBusySlots
+      .filter((slot) => slot.date === booking.selectedDate)
+      .map((slot) => slot.time)
+  ]);
+  const requestedTimes = buildOccupiedSlotTimes(
+    booking.selectedDate,
+    booking.selectedTime,
+    resolvedServiceType.duration_minutes
+  );
+  const slotBlocked = requestedTimes.some((slot) => occupiedTimes.has(slot));
 
   if (slotBlocked) {
     return {
@@ -152,17 +176,21 @@ export async function createBookingRequest(
     };
   }
 
+  const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("booking_requests")
     .insert({
       profile_id: profileId,
       name: booking.name,
       phone: booking.phone,
-      appointment_type: booking.appointmentType,
       notes: booking.notes || null,
       date: booking.selectedDate,
       time: booking.selectedTime,
-      status: "pending"
+      status: "pending",
+      service_type_id: resolvedServiceType.id,
+      service_type_name: resolvedServiceType.name,
+      service_type_duration_minutes: resolvedServiceType.duration_minutes,
+      appointment_type: null
     })
     .select("*")
     .single();

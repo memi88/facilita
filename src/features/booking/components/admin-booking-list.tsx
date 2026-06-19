@@ -3,7 +3,6 @@ import { ptBR } from "date-fns/locale";
 import { CalendarCheck2 } from "lucide-react";
 import type { BookingRequest } from "@/lib/supabase/types";
 import { bookingStatusLabels } from "../constants";
-import { getAppointmentTypeLabel } from "../formatters";
 import { CalendarEventActionForm } from "./calendar-event-action-form";
 import { StatusActionForm } from "./status-action-form";
 
@@ -26,10 +25,10 @@ function formatDateTime(value: string) {
 export function AdminBookingList({ bookings }: { bookings: BookingRequest[] }) {
   if (!bookings.length) {
     return (
-      <div className="rounded-lg border border-border bg-white p-8 text-center shadow-soft">
-        <h2 className="text-lg font-semibold">Nenhuma solicitacao encontrada</h2>
+      <div className="rounded-[1.25rem] border border-border/80 bg-white p-8 text-center shadow-soft">
+        <h2 className="text-lg font-semibold tracking-tight">Nenhuma solicitação encontrada</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Novas solicitacoes enviadas em /agendar aparecerao aqui.
+          Novas solicitações enviadas em /agendar aparecerão aqui.
         </p>
       </div>
     );
@@ -43,12 +42,12 @@ export function AdminBookingList({ bookings }: { bookings: BookingRequest[] }) {
         return (
           <article
             key={booking.id}
-            className="rounded-lg border border-border bg-white p-5 shadow-soft"
+            className="rounded-[1.25rem] border border-border/80 bg-white p-5 shadow-soft"
           >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-3">
-                  <h2 className="text-xl font-semibold">{booking.name}</h2>
+                  <h2 className="text-xl font-semibold tracking-tight">{booking.name}</h2>
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusClass(
                       booking.status
@@ -76,18 +75,18 @@ export function AdminBookingList({ bookings }: { bookings: BookingRequest[] }) {
                   </div>
                   <div>
                     <dt className="font-semibold text-foreground">Tipo</dt>
-                    <dd>{getAppointmentTypeLabel(booking.appointment_type)}</dd>
+                    <dd>{booking.service_type_name}</dd>
                   </div>
                 </dl>
                 {booking.notes ? (
-                  <p className="mt-4 rounded-md bg-muted p-3 text-sm leading-6 text-muted-foreground">
+                  <p className="mt-4 rounded-2xl bg-[rgba(37,99,235,0.04)] p-3 text-sm leading-6 text-muted-foreground">
                     {booking.notes}
                   </p>
                 ) : null}
                 {booking.rejection_reason ? (
-                  <div className="mt-4 rounded-md border border-red-100 bg-red-50 p-3">
+                  <div className="mt-4 rounded-2xl border border-red-100 bg-red-50 p-3">
                     <p className="text-xs font-semibold uppercase text-red-700">
-                      Motivo da rejeicao
+                      Motivo da rejeição
                     </p>
                     <p className="mt-1 text-sm leading-6 text-red-800">
                       {booking.rejection_reason}

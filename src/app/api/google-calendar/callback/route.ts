@@ -8,9 +8,10 @@ import {
 } from "@/features/calendar/google-oauth";
 import { getProfileByUserId } from "@/features/profiles/data";
 import { getSiteUrl } from "@/lib/site-url";
+import { getSafeInternalPath } from "@/lib/navigation";
 
-function redirectToProfile(params?: Record<string, string>) {
-  const url = new URL("/admin/perfil", getSiteUrl());
+function redirectToPath(path: string, params?: Record<string, string>) {
+  const url = new URL(getSafeInternalPath(path, "/admin/perfil?tab=agendas"), getSiteUrl());
 
   for (const [key, value] of Object.entries(params ?? {})) {
     url.searchParams.set(key, value);
@@ -25,13 +26,28 @@ export async function GET(request: NextRequest) {
   const savedState = request.cookies.get("google_calendar_oauth_state")?.value;
 
   if (!code || !state || !savedState) {
-    return redirectToProfile({ calendar: "missing_oauth_data" });
+    return redirectToPath("/admin/perfil?tab=agendas", { calendar: "missing_oauth_data" });
   }
 
-  const [stateToken, profileId] = state.split(":");
+  const [stateToken, encodedPayload] = state.split(".");
 
-  if (stateToken !== savedState || !profileId) {
-    return redirectToProfile({ calendar: "invalid_state" });
+  if (stateToken !== savedState || !encodedPayload) {
+    return redirectToPath("/admin/perfil?tab=agendas", { calendar: "invalid_state" });
+  }
+
+  let payload: {
+    profileId: string;
+    returnTo: string;
+    label: string;
+    email: string | null;
+    calendarId: string;
+    isPrimary: boolean;
+  };
+
+  try {
+    payload = JSON.parse(Buffer.from(encodedPayload, "base64url").toString("utf8"));
+  } catch {
+    return redirectToPath("/admin/perfil?tab=agendas", { calendar: "invalid_state" });
   }
 
   const supabase = createSupabaseServerClient();
@@ -40,13 +56,18 @@ export async function GET(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.redirect(new URL("/login?next=/admin/perfil", getSiteUrl()));
+    return NextResponse.redirect(
+      new URL(
+        `/login?next=${encodeURIComponent(getSafeInternalPath(payload?.returnTo ?? "/admin/perfil?tab=agendas", "/admin/perfil?tab=agendas"))}`,
+        getSiteUrl()
+      )
+    );
   }
 
   const profile = await getProfileByUserId(user.id);
 
-  if (!profile || profile.id !== profileId) {
-    return redirectToProfile({ calendar: "profile_mismatch" });
+  if (!profile || profile.id !== payload.profileId) {
+    return redirectToPath(payload.returnTo, { calendar: "profile_mismatch" });
   }
 
   try {
@@ -57,35 +78,53 @@ export async function GET(request: NextRequest) {
       .from("google_calendar_connections")
       .select("refresh_token")
       .eq("profile_id", profile.id)
-      .single();
+      .eq("calendar_id", payload.calendarId || "primary")
+      .maybeSingle();
+
+    if (payload.isPrimary) {
+      await adminSupabase
+        .from("google_calendar_connections")
+        .update({ is_primary: false })
+        .eq("profile_id", profile.id);
+    }
 
     await adminSupabase.from("google_calendar_connections").upsert(
       {
         profile_id: profile.id,
+        label: payload.label,
         google_email: googleEmail,
-        calendar_id: profile.google_calendar_id || "primary",
+        calendar_id: payload.calendarId || "primary",
         access_token: token.access_token,
         refresh_token: token.refresh_token ?? existingConnection?.refresh_token ?? null,
         token_expires_at: addSeconds(new Date(), token.expires_in).toISOString(),
-        scope: token.scope ?? null
+        scope: token.scope ?? null,
+        is_primary: payload.isPrimary
       },
-      { onConflict: "profile_id" }
+      { onConflict: "profile_id,calendar_id" }
     );
+
+    const { data: remainingConnections } = await adminSupabase
+      .from("google_calendar_connections")
+      .select("id")
+      .eq("profile_id", profile.id)
+      .limit(1);
 
     await adminSupabase
       .from("profiles")
       .update({
-        calendar_connected: true,
-        calendar_email: googleEmail ?? profile.calendar_email,
-        google_calendar_id: profile.google_calendar_id || "primary"
+        calendar_connected: Boolean(remainingConnections?.length),
+        calendar_email: profile.calendar_email_is_account_email
+          ? profile.calendar_email ?? user.email
+          : googleEmail ?? profile.calendar_email,
+        google_calendar_id: payload.calendarId || "primary"
       })
       .eq("id", profile.id);
 
-    const response = redirectToProfile({ calendar: "connected" });
+    const response = redirectToPath(payload.returnTo, { calendar: "connected" });
     response.cookies.delete("google_calendar_oauth_state");
     return response;
   } catch (error) {
     console.error("[google-calendar] OAuth callback failed", error);
-    return redirectToProfile({ calendar: "failed" });
+    return redirectToPath(payload.returnTo, { calendar: "failed" });
   }
 }

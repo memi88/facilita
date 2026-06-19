@@ -38,6 +38,8 @@ npm install
    - `supabase/005_booking_notifications.sql`
    - `supabase/006_profiles_multi_tenant.sql`
    - `supabase/007_fix_availability_rules_multitenant_pk.sql`
+   - `supabase/011_service_types_and_profile_email.sql`
+   - `supabase/012_multi_google_calendar_connections.sql`
 
 4. Create a professional account from `/cadastro` or directly in Supabase Auth.
 

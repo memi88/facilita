@@ -12,6 +12,12 @@ export function getSiteUrl() {
   return "http://localhost:3000";
 }
 
-export function getPublicBookingUrl(slug: string) {
-  return `${getSiteUrl()}/agendar/${slug}`;
+export function getPublicBookingUrl(slug: string, serviceTypeId?: string) {
+  const url = new URL(`/agendar/${slug}`, getSiteUrl());
+
+  if (serviceTypeId) {
+    url.searchParams.set("serviceTypeId", serviceTypeId);
+  }
+
+  return url.toString();
 }

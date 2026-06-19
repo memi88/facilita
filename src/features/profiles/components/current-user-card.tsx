@@ -1,5 +1,6 @@
 import { Mail, UserRound } from "lucide-react";
 import type { Profile } from "@/lib/supabase/types";
+import { PageCard } from "@/components/ui/scheduler-shell";
 
 export function CurrentUserCard({
   profile,
@@ -13,7 +14,7 @@ export function CurrentUserCard({
   const displayName = profile?.public_name || profile?.name || "Profissional";
 
   return (
-    <div className="rounded-xl border border-border bg-white p-4 shadow-soft">
+    <PageCard className="p-4">
       <div className="flex items-start gap-3">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
           <UserRound className="h-5 w-5" />
@@ -28,6 +29,11 @@ export function CurrentUserCard({
               {profile.profession}
             </p>
           ) : null}
+          {profile?.calendar_email_is_account_email ? (
+            <p className="mt-1 text-xs text-muted-foreground">
+              E-mail principal igual ao da conta
+            </p>
+          ) : null}
           {!compact && email ? (
             <p className="mt-2 flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
               <Mail className="h-4 w-4 shrink-0" />
@@ -36,6 +42,6 @@ export function CurrentUserCard({
           ) : null}
         </div>
       </div>
-    </div>
+    </PageCard>
   );
 }
