@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { isLikelyAutomatedSubmission } from "@/lib/form-security";
 import { getSafeInternalPath } from "@/lib/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getProfileByUserId } from "./data";
@@ -64,6 +65,15 @@ export async function signUpProfessional(
   _previousState: SignUpState,
   formData: FormData
 ): Promise<SignUpState> {
+  if (
+    isLikelyAutomatedSubmission({
+      honeypot: formData.get("website"),
+      submittedAt: formData.get("formStartedAt")
+    })
+  ) {
+    return { message: "Nao foi possivel processar seu cadastro." };
+  }
+
   const name = String(formData.get("name") || "").trim();
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const password = String(formData.get("password") || "");
@@ -253,7 +263,7 @@ export async function saveServiceType(
     if (error) {
       return {
         ok: false,
-        message: "Nao foi possivel atualizar o atendimento."
+        message: "Nao foi possivel atualizar o serviço."
       };
     }
   } else {
@@ -276,7 +286,7 @@ export async function saveServiceType(
     if (error) {
       return {
         ok: false,
-        message: "Nao foi possivel criar o atendimento."
+        message: "Nao foi possivel criar o serviço."
       };
     }
   }

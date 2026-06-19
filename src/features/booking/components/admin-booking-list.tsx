@@ -42,7 +42,7 @@ export function AdminBookingList({ bookings }: { bookings: BookingRequest[] }) {
         return (
           <article
             key={booking.id}
-            className="rounded-[1.25rem] border border-border/80 bg-white p-5 shadow-soft"
+            className="rounded-[1.25rem] border border-border/80 bg-white p-6 shadow-soft"
           >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
@@ -56,7 +56,7 @@ export function AdminBookingList({ bookings }: { bookings: BookingRequest[] }) {
                     {bookingStatusLabels[booking.status]}
                   </span>
                 </div>
-                <dl className="mt-4 grid gap-3 text-sm text-muted-foreground sm:grid-cols-2 lg:grid-cols-4">
+                <dl className="mt-4 grid gap-4 text-sm text-muted-foreground sm:grid-cols-2 lg:grid-cols-4">
                   <div>
                     <dt className="font-semibold text-foreground">Data</dt>
                     <dd>
@@ -79,12 +79,12 @@ export function AdminBookingList({ bookings }: { bookings: BookingRequest[] }) {
                   </div>
                 </dl>
                 {booking.notes ? (
-                  <p className="mt-4 rounded-2xl bg-[rgba(37,99,235,0.04)] p-3 text-sm leading-6 text-muted-foreground">
+                  <p className="mt-4 rounded-2xl bg-[rgba(37,99,235,0.04)] p-4 text-sm leading-6 text-muted-foreground">
                     {booking.notes}
                   </p>
                 ) : null}
                 {booking.rejection_reason ? (
-                  <div className="mt-4 rounded-2xl border border-red-100 bg-red-50 p-3">
+                  <div className="mt-4 rounded-2xl border border-red-100 bg-red-50 p-4">
                     <p className="text-xs font-semibold uppercase text-red-700">
                       Motivo da rejeição
                     </p>

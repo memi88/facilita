@@ -8,7 +8,7 @@ import {
 import { ptBR } from "date-fns/locale";
 import type { CalendarDay } from "./types";
 
-export function getCalendarDays(count = 14): CalendarDay[] {
+export function getCalendarDays(count = 120): CalendarDay[] {
   const today = startOfDay(new Date());
 
   return Array.from({ length: count }, (_, index) => {

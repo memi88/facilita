@@ -32,7 +32,7 @@ function ServiceTypeEditor({
   });
 
   return (
-    <div className="grid gap-4 rounded-[1.25rem] border border-border/80 bg-white p-4 shadow-soft">
+    <div className="grid gap-4 rounded-[1.25rem] border border-border/80 bg-white p-5 shadow-soft">
       <form action={formAction} className="grid gap-4">
         <input type="hidden" name="returnTo" value={returnTo} />
         {serviceType ? <input type="hidden" name="id" value={serviceType.id} /> : null}
@@ -60,11 +60,11 @@ function ServiceTypeEditor({
           <Textarea
             name="description"
             defaultValue={serviceType?.description ?? ""}
-            placeholder="Contexto, escopo ou observação do atendimento."
+            placeholder="Contexto, escopo ou observação do serviço."
           />
         </Field>
         <div className="flex flex-wrap items-center gap-3">
-          <SubmitButton label={isCreate ? "Adicionar atendimento" : "Salvar atendimento"} />
+          <SubmitButton label={isCreate ? "Adicionar serviço" : "Salvar serviço"} />
         </div>
         {state?.message ? (
           <p className={state.ok ? "text-sm text-primary" : "text-sm text-red-700"}>
@@ -95,11 +95,11 @@ export function ServiceTypesManager({
   returnTo?: string;
 }) {
   return (
-    <section className="grid gap-4 rounded-[1.25rem] border border-border/80 bg-white p-5 shadow-soft">
+    <section className="grid gap-4 rounded-[1.25rem] border border-border/80 bg-white p-6 shadow-soft">
       <div>
-        <h2 className="text-lg font-semibold tracking-tight">Tipos de atendimento</h2>
+        <h2 className="text-lg font-semibold tracking-tight">Serviços</h2>
         <p className="mt-1 text-sm leading-6 text-muted-foreground">
-          Cadastre um novo atendimento no topo e edite os existentes em cartões compactos.
+          Cadastre um novo serviço no topo e edite os existentes em cartões compactos.
         </p>
       </div>
 
@@ -109,9 +109,9 @@ export function ServiceTypesManager({
             <Plus className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-sm font-semibold">Novo atendimento</p>
+            <p className="text-sm font-semibold">Novo serviço</p>
             <p className="text-sm leading-6 text-muted-foreground">
-              Crie um tipo por vez. Os itens salvos aparecem logo abaixo.
+              Crie um serviço por vez. Os itens salvos aparecem logo abaixo.
             </p>
           </div>
         </div>
@@ -147,7 +147,7 @@ export function ServiceTypesManager({
               <div className="mt-4 grid gap-4 border-t border-border/80 pt-4">
                 <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
                   <PencilLine className="h-4 w-4" />
-                  Editar atendimento
+                  Editar serviço
                 </div>
                 <ServiceTypeEditor serviceType={serviceType} returnTo={returnTo} />
               </div>
@@ -155,7 +155,7 @@ export function ServiceTypesManager({
           ))
         ) : (
           <div className="rounded-2xl border border-dashed border-border bg-[rgba(37,99,235,0.04)] p-4 text-sm text-muted-foreground">
-            Nenhum tipo de atendimento cadastrado ainda.
+            Nenhum serviço cadastrado ainda.
           </div>
         )}
       </div>

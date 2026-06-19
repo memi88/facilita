@@ -51,7 +51,7 @@ npm run dev
 
 ## Deploy
 
-See `docs/deploy.md` for the Vercel and Supabase production checklist.
+See `docs/deploy.md` for the AWS Amplify, Supabase, and Google Calendar production checklist.
 
 ## Notes
 

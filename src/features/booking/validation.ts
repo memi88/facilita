@@ -15,7 +15,7 @@ export const bookingRequestSchema = z.object({
         .max(13, "Informe um WhatsApp valido.")
         .regex(/^\d+$/, "Use somente numeros no WhatsApp.")
     ),
-  serviceTypeId: z.string().min(1, "Selecione um tipo de atendimento."),
+  serviceTypeId: z.string().min(1, "Selecione um serviço."),
   notes: z.string().trim().max(700, "Use no maximo 700 caracteres.").optional(),
   selectedDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   selectedTime: z.string().regex(/^\d{2}:\d{2}$/)

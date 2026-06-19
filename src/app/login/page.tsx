@@ -6,7 +6,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AppTopBar, Eyebrow, IconBadge, PageCard, ProgressBar, ShellBackground } from "@/components/ui/scheduler-shell";
 
 function getSafeNextPath(value?: string) {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+  if (!value || !value.startsWith("/") || value.startsWith("//") || value.includes("\\")) {
     return "/admin";
   }
 
@@ -43,7 +43,7 @@ export default async function LoginPage({
       />
 
       <main className="px-4 pb-8 pt-4 md:px-8 md:pb-10 md:pt-6">
-        <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-[1360px]">
           <div className="mb-4">
             <ProgressBar value={68} />
           </div>

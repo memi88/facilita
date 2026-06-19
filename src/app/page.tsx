@@ -79,7 +79,7 @@ export default async function HomePage() {
       />
 
       <main className="px-4 pb-16 pt-8 md:px-8 md:pb-20 md:pt-12">
-        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+        <div className="mx-auto grid max-w-[1360px] gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
           <div className="max-w-3xl">
             <Eyebrow>Organização com leveza para quem cuida de pessoas</Eyebrow>
             <h1 className="mt-4 text-5xl font-semibold tracking-tight md:text-7xl">
@@ -90,13 +90,23 @@ export default async function HomePage() {
               perder tempo no WhatsApp.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/cadastro"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-soft transition hover:brightness-95"
-              >
-                Cadastrar
-                <ArrowRight className="h-4 w-4" />
-              </Link>
+              {user ? (
+                <Link
+                  href="/admin"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-soft transition hover:brightness-95"
+                >
+                  Ir para o painel
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              ) : (
+                <Link
+                  href="/cadastro"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-soft transition hover:brightness-95"
+                >
+                  Cadastrar
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              )}
               <Link
                 href="#como-funciona"
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-border bg-white px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
@@ -130,11 +140,10 @@ export default async function HomePage() {
                 {["09:00", "10:30", "14:00", "15:30"].map((time, index) => (
                   <div
                     key={time}
-                    className={`rounded-2xl border p-3 text-center text-sm font-semibold ${
-                      index === 1
+                    className={`rounded-2xl border p-3 text-center text-sm font-semibold ${index === 1
                         ? "border-primary bg-primary text-primary-foreground"
                         : "border-border bg-white"
-                    }`}
+                      }`}
                   >
                     {time}
                   </div>
@@ -145,7 +154,7 @@ export default async function HomePage() {
         </div>
 
         <section className="mt-12 border-y border-border/80 bg-white/80 px-0 py-14">
-          <div className="mx-auto max-w-7xl">
+          <div className="mx-auto max-w-[1360px]">
             <div className="max-w-2xl">
               <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
                 Se sua agenda depende de mensagens, ela está te atrasando.
@@ -154,7 +163,7 @@ export default async function HomePage() {
             <div className="mt-8 grid gap-4 md:grid-cols-4">
               {[
                 "Você precisa abrir várias agendas para responder um horário",
-                "Já ficou com medo de marcar dois atendimentos no mesmo horário",
+                "Já ficou com medo de marcar dois serviços no mesmo horário",
                 "A sala nem sempre está disponível",
                 "O WhatsApp vira uma bagunça"
               ].map((item) => (
@@ -167,11 +176,11 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section id="como-funciona" className="mx-auto mt-12 max-w-7xl">
+        <section id="como-funciona" className="mx-auto mt-12 max-w-[1360px]">
           <div className="max-w-2xl">
             <Eyebrow>Um jeito mais leve de organizar seu tempo</Eyebrow>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">
-              Você cuida do atendimento. A gente organiza o seu tempo.
+              Você cuida dos serviços. A gente organiza o seu tempo.
             </h2>
           </div>
           <div className="mt-8 grid gap-4 md:grid-cols-3">
@@ -187,7 +196,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section className="mx-auto mt-12 grid max-w-7xl gap-4 md:grid-cols-[0.9fr_1.1fr] md:items-center">
+        <section className="mx-auto mt-12 grid max-w-[1360px] gap-4 md:grid-cols-[0.9fr_1.1fr] md:items-center">
           <PageCard className="p-6">
             <Clock className="h-6 w-6 text-primary" />
             <h2 className="mt-4 text-3xl font-semibold tracking-tight">
@@ -197,16 +206,9 @@ export default async function HomePage() {
               Menos tempo organizando agenda. Mais tempo atendendo, estudando ou descansando.
             </p>
           </PageCard>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {["Neuropsicopedagogas", "Psicólogas", "Terapeutas", "Profissionais autônomos"].map((item) => (
-              <div key={item} className="rounded-[1.25rem] border border-border/80 bg-white p-4 text-sm font-semibold shadow-soft">
-                {item}
-              </div>
-            ))}
-          </div>
         </section>
 
-        <section className="mx-auto mt-12 max-w-7xl">
+        <section className="mx-auto mt-12 max-w-[1360px]">
           <div className="flex flex-col gap-5 rounded-[1.5rem] border border-border/80 bg-[linear-gradient(135deg,rgba(15,23,42,0.98),rgba(37,99,235,0.9))] p-6 text-white shadow-soft md:flex-row md:items-center md:justify-between">
             <div>
               <ShieldCheck className="h-6 w-6 text-[rgba(180,197,255,1)]" />
@@ -217,13 +219,23 @@ export default async function HomePage() {
                 Pare de cruzar agendas e responder horários manualmente.
               </p>
             </div>
-            <Link
-              href="/cadastro"
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
-            >
-              <MessageCircle className="h-4 w-4" />
-              Cadastrar
-            </Link>
+            {user ? (
+              <Link
+                href="/admin"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
+              >
+                <MessageCircle className="h-4 w-4" />
+                Ir para o painel
+              </Link>
+            ) : (
+              <Link
+                href="/cadastro"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
+              >
+                <MessageCircle className="h-4 w-4" />
+                Cadastrar
+              </Link>
+            )}
           </div>
         </section>
       </main>

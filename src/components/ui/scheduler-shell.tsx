@@ -24,7 +24,7 @@ export function AppTopBar({
 }) {
   return (
     <header className="px-4 pt-4 md:px-8 md:pt-6">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 rounded-[1.25rem] border border-border/80 bg-white/90 px-4 py-3 shadow-soft backdrop-blur md:px-5">
+      <div className="mx-auto flex max-w-[1360px] items-center justify-between gap-4 rounded-[1.25rem] border border-border/80 bg-white/90 px-4 py-3 shadow-soft backdrop-blur md:px-5">
         <Link href={homeHref} className="flex items-center gap-3">
           <BrandLogo compact={compact} />
         </Link>

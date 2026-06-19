@@ -73,7 +73,7 @@ function CalendarConnectionCard({
     `&returnTo=${encodeURIComponent(returnTo)}`;
 
   return (
-    <article className="grid gap-3 rounded-[1.25rem] border border-border/80 bg-white p-4 shadow-soft">
+    <article className="grid gap-3 rounded-[1.25rem] border border-border/80 bg-white p-5 shadow-soft">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -127,7 +127,7 @@ export function CalendarConnectionsManager({
   returnTo?: string;
 }) {
   return (
-    <section className="grid gap-4 rounded-[1.25rem] border border-border/80 bg-white p-5 shadow-soft">
+    <section className="grid gap-4 rounded-[1.25rem] border border-border/80 bg-white p-6 shadow-soft">
       <div className="flex flex-col gap-1 md:flex-row md:items-end md:justify-between">
         <div>
           <h2 className="text-lg font-semibold tracking-tight">Agendas conectadas</h2>

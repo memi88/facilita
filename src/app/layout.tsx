@@ -14,7 +14,7 @@ const body = Inter({
 
 export const metadata: Metadata = {
   title: "Facilita",
-  description: "Agendamentos, disponibilidade e tipos de atendimento em um so lugar.",
+  description: "Agendamentos, disponibilidade e serviços em um so lugar.",
   icons: {
     icon: "/logo-facilita-icon.svg",
     shortcut: "/logo-facilita-icon.svg",

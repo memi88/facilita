@@ -14,7 +14,7 @@ export function CurrentUserCard({
   const displayName = profile?.public_name || profile?.name || "Profissional";
 
   return (
-    <PageCard className="p-4">
+    <PageCard className="p-5">
       <div className="flex items-start gap-3">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
           <UserRound className="h-5 w-5" />

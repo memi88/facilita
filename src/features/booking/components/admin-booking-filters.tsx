@@ -53,21 +53,21 @@ export function AdminBookingFilters({
 }) {
   return (
     <section className="grid gap-4">
-      <div className="rounded-[1.25rem] border border-border/80 bg-white p-5 shadow-soft">
+      <div className="rounded-[1.25rem] border border-border/80 bg-white p-6 shadow-soft">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-lg font-semibold tracking-tight">Filtros</h2>
             <p className="text-sm text-muted-foreground">
-              Mostrando {visibleCount} solicitacoes.
+              Mostrando {visibleCount} solicitações.
             </p>
           </div>
           <div className="grid gap-3 lg:grid-cols-2">
             <div className="flex flex-wrap gap-2">
               {statusOptions.map((option) => (
                 <Link
-                key={option.value}
-                href={buildAdminHref(option.value, currentDate)}
-                className={cn(
+                  key={option.value}
+                  href={buildAdminHref(option.value, currentDate)}
+                  className={cn(
                     "inline-flex min-h-10 items-center justify-center rounded-xl border px-3 py-2 text-sm font-semibold transition",
                     currentStatus === option.value
                       ? "border-primary bg-primary text-primary-foreground shadow-soft"
@@ -81,9 +81,9 @@ export function AdminBookingFilters({
             <div className="flex flex-wrap gap-2">
               {dateOptions.map((option) => (
                 <Link
-                key={option.value}
-                href={buildAdminHref(currentStatus, option.value)}
-                className={cn(
+                  key={option.value}
+                  href={buildAdminHref(currentStatus, option.value)}
+                  className={cn(
                     "inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold transition",
                     currentDate === option.value
                       ? "border-primary bg-primary text-primary-foreground shadow-soft"

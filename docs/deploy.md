@@ -1,8 +1,8 @@
 # Deploy Checklist
 
-## Vercel
+## AWS Amplify
 
-Configure these environment variables in the Vercel project:
+Configure these environment variables in the Amplify app:
 
 ```bash
 NEXT_PUBLIC_SITE_URL=https://your-domain.com
@@ -20,6 +20,8 @@ MOCK_CALENDAR_BUSY_SLOTS=2026-05-01@09:00,2026-05-02@14:00
 ```
 
 Do not expose `SUPABASE_SERVICE_ROLE_KEY` in client code. It is only used inside server actions and server components.
+
+Use the root `amplify.yml` for the build settings. It runs `npm ci` and `npm run build` and publishes the Next.js build output.
 
 ## Supabase Database
 

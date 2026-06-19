@@ -52,20 +52,24 @@ export default async function BookingConfirmationPage({
       />
 
       <main className="px-4 pb-8 pt-4 md:px-8 md:pb-10 md:pt-6">
-        <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="mx-auto grid max-w-[1360px] gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <PageCard className="p-6 md:p-8">
             <div className="flex flex-col gap-5">
               <div className="flex items-start gap-3">
                 <IconBadge icon={CalendarCheck2} />
                 <div>
-                  <Eyebrow>Agendamento solicitado</Eyebrow>
+                  <Eyebrow>Passo 3 de 3</Eyebrow>
                   <h1 className="mt-1 text-4xl font-semibold tracking-tight md:text-6xl">
-                    Sua solicitação foi enviada.
+                    Agendamento pendente.
                   </h1>
                   <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
                     Em breve você receberá a confirmação pelo WhatsApp.
                   </p>
                 </div>
+              </div>
+
+              <div className="max-w-md">
+                <ProgressBar value={100} />
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
@@ -111,7 +115,7 @@ export default async function BookingConfirmationPage({
               <div className="grid gap-4 md:grid-cols-[1.1fr_0.9fr]">
                 <div className="rounded-2xl border border-border/80 p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-                    Tipo de atendimento
+                    Serviço
                   </p>
                   <p className="mt-2 text-sm font-semibold">{booking.service_type_name}</p>
                   <p className="mt-1 text-sm text-muted-foreground">

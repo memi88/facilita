@@ -34,7 +34,7 @@ export function NotificationsPanel({
   notifications: BookingNotificationWithBooking[];
 }) {
   return (
-    <section className="rounded-[1.25rem] border border-border/80 bg-white p-5 shadow-soft">
+    <section className="rounded-[1.25rem] border border-border/80 bg-white p-6 shadow-soft">
       <div className="mb-5 flex items-center gap-3">
         <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
           <Bell className="h-5 w-5" />
@@ -52,7 +52,7 @@ export function NotificationsPanel({
           notifications.map((notification) => (
             <article
               key={notification.id}
-              className="rounded-2xl border border-border/80 p-3"
+              className="rounded-2xl border border-border/80 p-4"
             >
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div>

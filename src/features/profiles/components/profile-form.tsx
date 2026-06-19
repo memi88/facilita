@@ -147,7 +147,7 @@ export function ProfileForm({
         </Field>
       </div>
 
-      <div className="rounded-[1.25rem] border border-border/80 bg-[rgba(37,99,235,0.04)] p-4">
+      <div className="rounded-[1.25rem] border border-border/80 bg-[rgba(37,99,235,0.04)] p-5">
         <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
             <div className="flex items-center gap-2">
@@ -165,7 +165,7 @@ export function ProfileForm({
           {profile ? (
             <Link
               href={`/api/google-calendar/connect?returnTo=${encodeURIComponent(returnTo)}`}
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-soft transition hover:brightness-95"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-soft transition hover:brightness-95"
             >
               {calendarConnected ? (
                 <Unplug className="h-4 w-4" />

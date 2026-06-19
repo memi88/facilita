@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { LogIn } from "lucide-react";
 import { useFormState, useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ function LoginButton() {
 }
 
 export function LoginForm({ nextPath }: { nextPath: string }) {
+  const [formStartedAt] = useState(() => new Date().toISOString());
   const [state, formAction] = useFormState(signInWithEmail, {
     message: ""
   });
@@ -25,6 +27,15 @@ export function LoginForm({ nextPath }: { nextPath: string }) {
   return (
     <form action={formAction} className="grid gap-4">
       <input type="hidden" name="next" value={nextPath} />
+      <input type="hidden" name="formStartedAt" value={formStartedAt} />
+      <input
+        type="text"
+        name="website"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        className="sr-only"
+      />
       <Field label="E-mail">
         <Input name="email" type="email" required autoComplete="email" />
       </Field>

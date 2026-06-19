@@ -2,13 +2,19 @@
 
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { isLikelyAutomatedSubmission } from "@/lib/form-security";
 
 export type LoginActionState = {
   message: string;
 };
 
 function getSafeNextPath(value: FormDataEntryValue | null) {
-  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) {
+  if (
+    typeof value !== "string" ||
+    !value.startsWith("/") ||
+    value.startsWith("//") ||
+    value.includes("\\")
+  ) {
     return "/admin";
   }
 
@@ -19,6 +25,15 @@ export async function signInWithEmail(
   _previousState: LoginActionState,
   formData: FormData
 ): Promise<LoginActionState> {
+  if (
+    isLikelyAutomatedSubmission({
+      honeypot: formData.get("website"),
+      submittedAt: formData.get("formStartedAt")
+    })
+  ) {
+    return { message: "Nao foi possivel processar sua solicitacao." };
+  }
+
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const password = String(formData.get("password") || "");
   const nextPath = getSafeNextPath(formData.get("next"));

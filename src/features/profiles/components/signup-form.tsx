@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { UserPlus } from "lucide-react";
 import { useFormState, useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
@@ -18,12 +19,22 @@ function SubmitButton({ label }: { label: string }) {
 }
 
 export function SignUpForm() {
+  const [formStartedAt] = useState(() => new Date().toISOString());
   const [state, formAction] = useFormState(signUpProfessional, {
     message: ""
   });
 
   return (
     <form action={formAction} className="grid gap-4">
+      <input type="hidden" name="formStartedAt" value={formStartedAt} />
+      <input
+        type="text"
+        name="website"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        className="sr-only"
+      />
       <Field label="Nome">
         <Input name="name" required placeholder="Maria Silva" />
       </Field>

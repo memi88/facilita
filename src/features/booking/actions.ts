@@ -3,9 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import type { BookingRequest } from "@/lib/supabase/types";
+import type { BookingRequest, Profile } from "@/lib/supabase/types";
 import { getCalendarBusySlots } from "@/features/calendar/provider";
 import { createGoogleCalendarEvent } from "@/features/calendar/google-provider";
+import { isLikelyAutomatedSubmission } from "@/lib/form-security";
 import {
   enqueueBookingNotification,
   enqueueBookingReviewNotifications
@@ -25,7 +26,7 @@ import {
   buildOccupiedSlotTimes
 } from "./availability-data";
 import { bookingRequestSchema, statusUpdateSchema } from "./validation";
-async function saveGoogleCalendarEvent(booking: BookingRequest) {
+export async function saveGoogleCalendarEvent(booking: BookingRequest) {
   if (booking.google_event_id) {
     return true;
   }
@@ -49,10 +50,68 @@ async function saveGoogleCalendarEvent(booking: BookingRequest) {
   return !error;
 }
 
+async function assertBookingSlotIsAvailable(
+  profile: Profile,
+  date: string,
+  time: string,
+  durationMinutes: number
+) {
+  const profileId = profile.id;
+
+  const [rules, dateBlocked, calendarBusySlots, blockedSlots] = await Promise.all([
+    getAvailabilityRules(profileId),
+    isDateBlocked(profileId, date),
+    getCalendarBusySlots(profile, date, date),
+    getBlockedSlotsByDate(profileId, date, date)
+  ]);
+
+  const baseSlots = getConfiguredSlotsForDate(
+    date,
+    rules,
+    dateBlocked ? new Set([date]) : new Set()
+  );
+  const baseSlotAvailable = baseSlots.some((slot) => slot.time === time && slot.available);
+
+  if (!baseSlotAvailable) {
+    throw new Error("O horario selecionado nao esta disponivel.");
+  }
+
+  const calendarSlotBlocked = calendarBusySlots.some(
+    (slot) => slot.date === date && slot.time === time
+  );
+
+  if (calendarSlotBlocked) {
+    throw new Error("Este horario esta ocupado no calendario. Escolha outro horario.");
+  }
+
+  const occupiedTimes = new Set([
+    ...(blockedSlots?.[date] ?? []),
+    ...calendarBusySlots.filter((slot) => slot.date === date).map((slot) => slot.time)
+  ]);
+  const requestedTimes = buildOccupiedSlotTimes(date, time, durationMinutes);
+  const slotBlocked = requestedTimes.some((slot) => occupiedTimes.has(slot));
+
+  if (slotBlocked) {
+    throw new Error("Este horario acabou de ser reservado. Escolha outro horario.");
+  }
+}
+
 export async function createBookingRequest(
   _previousState: BookingActionState,
   formData: FormData
 ): Promise<BookingActionState> {
+  if (
+    isLikelyAutomatedSubmission({
+      honeypot: formData.get("website"),
+      submittedAt: formData.get("formStartedAt")
+    })
+  ) {
+    return {
+      ok: false,
+      message: "Nao foi possivel processar sua solicitacao."
+    };
+  }
+
   const profileId = String(formData.get("profileId") || "").trim();
   const profileSlug = String(formData.get("profileSlug") || "").trim();
   const serviceTypeId = String(formData.get("serviceTypeId") || "").trim();
@@ -96,7 +155,7 @@ export async function createBookingRequest(
   if (!serviceType && availableServiceTypes.length) {
     return {
       ok: false,
-      message: "Selecione um tipo de atendimento valido."
+      message: "Selecione um serviço valido."
     };
   }
 
@@ -218,6 +277,150 @@ export async function createBookingRequest(
     ok: true,
     message:
       "Sua solicitacao foi enviada. Em breve voce recebera a confirmacao pelo WhatsApp.",
+    bookingId: data.id
+  };
+}
+
+export async function createManualBookingRequest(
+  _previousState: BookingActionState,
+  formData: FormData
+): Promise<BookingActionState> {
+  const profileId = String(formData.get("profileId") || "").trim();
+  const serviceTypeId = String(formData.get("serviceTypeId") || "").trim();
+
+  if (!profileId) {
+    return {
+      ok: false,
+      message: "Perfil nao encontrado."
+    };
+  }
+
+  const parsed = bookingRequestSchema.safeParse({
+    name: formData.get("name"),
+    phone: formData.get("phone"),
+    serviceTypeId,
+    notes: formData.get("notes") || undefined,
+    selectedDate: formData.get("selectedDate"),
+    selectedTime: formData.get("selectedTime")
+  });
+
+  if (!parsed.success) {
+    return {
+      ok: false,
+      message: parsed.error.issues[0]?.message ?? "Revise os dados informados."
+    };
+  }
+
+  const serverSupabase = createSupabaseServerClient();
+  const {
+    data: { user }
+  } = await serverSupabase.auth.getUser();
+
+  if (!user) {
+    return {
+      ok: false,
+      message: "Voce nao tem permissao para criar este agendamento."
+    };
+  }
+
+  const profile = await getProfileByUserId(user.id);
+
+  if (!profile || profile.id !== profileId) {
+    return {
+      ok: false,
+      message: "Perfil nao encontrado."
+    };
+  }
+
+  const serviceType = await getServiceTypeById(profileId, serviceTypeId);
+  const availableServiceTypes = await getServiceTypesByProfileId(profileId);
+
+  if (!serviceType && availableServiceTypes.length) {
+    return {
+      ok: false,
+      message: "Selecione um serviço valido."
+    };
+  }
+
+  const resolvedServiceType =
+    serviceType ??
+    ({
+      id: null,
+      name: "Consulta inicial",
+      description: "Atendimento padrão criado automaticamente para a agenda.",
+      duration_minutes: 60,
+      sort_order: 0
+    } as const);
+
+  try {
+    await assertBookingSlotIsAvailable(
+      profile,
+      parsed.data.selectedDate,
+      parsed.data.selectedTime,
+      resolvedServiceType.duration_minutes
+    );
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "Nao foi possivel verificar a disponibilidade."
+    };
+  }
+
+  const reviewedAt = new Date().toISOString();
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("booking_requests")
+    .insert({
+      profile_id: profileId,
+      name: parsed.data.name,
+      phone: parsed.data.phone,
+      notes: parsed.data.notes || null,
+      date: parsed.data.selectedDate,
+      time: parsed.data.selectedTime,
+      status: "approved",
+      reviewed_at: reviewedAt,
+      reviewed_by: user.email ?? null,
+      service_type_id: resolvedServiceType.id,
+      service_type_name: resolvedServiceType.name,
+      service_type_duration_minutes: resolvedServiceType.duration_minutes,
+      appointment_type: null
+    })
+    .select("*")
+    .single();
+
+  if (error || !data) {
+    if (error?.code === "23505") {
+      return {
+        ok: false,
+        message: "Este horario acabou de ser reservado. Escolha outro horario."
+      };
+    }
+
+    return {
+      ok: false,
+      message: "Nao foi possivel criar o agendamento agora."
+    };
+  }
+
+  let calendarCreated = false;
+
+  try {
+    calendarCreated = await saveGoogleCalendarEvent(data);
+  } catch (eventError) {
+    console.error("[booking] Google Calendar event creation failed", eventError);
+  }
+
+  await enqueueBookingReviewNotifications(data);
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/pedidos");
+  revalidatePath("/agendar");
+
+  return {
+    ok: true,
+    message: calendarCreated
+      ? "Agendamento criado com sucesso."
+      : "Agendamento criado. Conecte o Google Calendar para sincronizar o evento.",
     bookingId: data.id
   };
 }
