@@ -61,7 +61,6 @@ export default async function NewManualBookingPage() {
       <WorkspaceTopNav
         profile={profile}
         activeHref="/admin/pedidos"
-        publicBookingUrl={publicBookingUrl}
       />
 
       <main className="mx-auto flex max-w-[1360px] gap-6 px-4 py-6 md:px-10">

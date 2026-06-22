@@ -47,7 +47,6 @@ export default async function AvailabilityPage() {
       <WorkspaceTopNav
         profile={profile}
         activeHref="/admin/disponibilidade"
-        publicBookingUrl={publicBookingUrl}
       />
 
       <main className="mx-auto flex max-w-[1360px] gap-6 px-4 py-6 md:px-10">

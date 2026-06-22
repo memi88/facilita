@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Bell, HelpCircle } from "lucide-react";
 import type { Profile } from "@/lib/supabase/types";
 import { BrandLogo } from "./brand-logo";
-import { ShareLinkButton } from "./share-link-button";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -24,14 +23,10 @@ function ProfileAvatar({ profile }: { profile: Profile | null }) {
 
 export function WorkspaceTopNav({
   profile,
-  activeHref = "/admin",
-  publicBookingUrl,
-  showShareButton = true
+  activeHref = "/admin"
 }: {
   profile: Profile | null;
   activeHref?: string;
-  publicBookingUrl?: string | null;
-  showShareButton?: boolean;
 }) {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-white/95 shadow-soft backdrop-blur">
@@ -62,12 +57,6 @@ export function WorkspaceTopNav({
         </nav>
 
         <div className="flex items-center gap-2 md:gap-3">
-          {showShareButton && publicBookingUrl ? (
-            <ShareLinkButton
-              url={publicBookingUrl}
-              className="hidden min-h-11 rounded-xl px-4 md:inline-flex"
-            />
-          ) : null}
           <button
             type="button"
             className="hidden rounded-full p-2 text-secondary transition hover:bg-muted md:inline-flex"

@@ -69,7 +69,6 @@ export default async function AdminPage() {
       <WorkspaceTopNav
         profile={profile}
         activeHref="/admin"
-        publicBookingUrl={publicBookingUrl}
       />
 
       <main className="mx-auto flex max-w-[1360px] gap-6 px-4 py-6 md:px-10">
