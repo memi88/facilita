@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Ban, CalendarCog, Clock, Loader2, Plus, Save, Trash2 } from "lucide-react";
+import { parseISO } from "date-fns";
+import { Ban, CalendarCog, Clock, Loader2, Lock, Plus, Save, Trash2 } from "lucide-react";
 import { useFormState, useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
@@ -16,6 +17,7 @@ import {
   saveAvailabilityRules
 } from "../actions";
 import { weekDays } from "../constants";
+import type { CalendarBusySlot } from "@/features/calendar/types";
 
 const commonSlots = [
   "08:00",
@@ -77,6 +79,7 @@ function DaySlotSelector({
   dayLabel,
   enabled,
   slots,
+  autoBlockedSlots,
   onEnabledChange,
   onSlotsChange
 }: {
@@ -84,13 +87,19 @@ function DaySlotSelector({
   dayLabel: string;
   enabled: boolean;
   slots: string[];
+  autoBlockedSlots: string[];
   onEnabledChange: (enabled: boolean) => void;
   onSlotsChange: (slots: string[]) => void;
 }) {
   const [customSlot, setCustomSlot] = useState("");
   const selectedSlots = new Set(slots);
+  const autoBlocked = new Set(autoBlockedSlots);
 
   function toggleSlot(slot: string) {
+    if (autoBlocked.has(slot)) {
+      return;
+    }
+
     onSlotsChange(
       selectedSlots.has(slot)
         ? slots.filter((item) => item !== slot)
@@ -121,9 +130,16 @@ function DaySlotSelector({
           />
           {dayLabel}
         </label>
-        <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
-          {slots.length} horarios
-        </span>
+        <div className="flex items-center gap-2">
+          {autoBlockedSlots.length ? (
+            <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">
+              {autoBlockedSlots.length} bloqueados
+            </span>
+          ) : null}
+          <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
+            {slots.length} horarios
+          </span>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -164,21 +180,28 @@ function DaySlotSelector({
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-10">
         {commonSlots.map((slot) => {
           const selected = selectedSlots.has(slot);
+          const blocked = autoBlocked.has(slot);
 
           return (
             <button
               key={slot}
               type="button"
-              disabled={!enabled}
+              disabled={!enabled || blocked}
               onClick={() => toggleSlot(slot)}
               className={cn(
-                "flex h-10 items-center justify-center rounded-md border text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-45",
-                selected
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-white text-foreground hover:bg-muted"
+                "flex h-10 items-center justify-center rounded-md border text-sm font-semibold transition disabled:cursor-not-allowed",
+                blocked
+                  ? "border-red-200 bg-red-50 text-red-700 opacity-100 hover:bg-red-50"
+                  : selected
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-white text-foreground hover:bg-muted",
+                !enabled && "opacity-45"
               )}
             >
-              {slot}
+              <span className="flex items-center gap-1">
+                {blocked ? <Lock className="h-3.5 w-3.5" /> : null}
+                {slot}
+              </span>
             </button>
           );
         })}
@@ -224,10 +247,12 @@ function DaySlotSelector({
 
 export function AvailabilitySettings({
   rules,
-  dateBlocks
+  dateBlocks,
+  busySlots
 }: {
   rules: AvailabilityRule[];
   dateBlocks: AvailabilityDateBlock[];
+  busySlots: CalendarBusySlot[];
 }) {
   const [rulesState, rulesAction] = useFormState(saveAvailabilityRules, {
     ok: false,
@@ -237,6 +262,15 @@ export function AvailabilitySettings({
     ok: false,
     message: ""
   });
+  const busySlotsByWeekday = useMemo(
+    () =>
+      busySlots.reduce<Record<number, string[]>>((accumulator, slot) => {
+        const weekday = parseISO(slot.date).getDay();
+        accumulator[weekday] = [...(accumulator[weekday] ?? []), slot.time];
+        return accumulator;
+      }, {}),
+    [busySlots]
+  );
   const initialRuleState = useMemo(
     () =>
       Object.fromEntries(
@@ -289,6 +323,9 @@ export function AvailabilitySettings({
             enabled: false,
             slots: []
           };
+          const autoBlockedSlots = Array.from(
+            new Set(busySlotsByWeekday[day.value] ?? [])
+          ).sort();
 
           return (
             <DaySlotSelector
@@ -297,6 +334,7 @@ export function AvailabilitySettings({
               dayLabel={day.label}
               enabled={dayState.enabled}
               slots={dayState.slots}
+              autoBlockedSlots={autoBlockedSlots}
               onEnabledChange={(enabled) => updateDay(day.value, { enabled })}
               onSlotsChange={(slots) => updateDay(day.value, { slots })}
             />
@@ -311,6 +349,18 @@ export function AvailabilitySettings({
           ) : null}
         </div>
       </form>
+
+      <div className="border-t border-border/80 pt-5">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          <span className="inline-flex items-center gap-2 rounded-full bg-red-50 px-3 py-1 font-medium text-red-700">
+            <Lock className="h-3.5 w-3.5" />
+            Bloqueio automático do Google Calendar
+          </span>
+          <span className="rounded-full bg-muted px-3 py-1 font-medium">
+            Horários vermelhos estão ocupados e não podem ser editados aqui
+          </span>
+        </div>
+      </div>
 
       <div className="border-t border-border/80 pt-5">
         <h3 className="text-base font-semibold tracking-tight">Bloqueios por data</h3>

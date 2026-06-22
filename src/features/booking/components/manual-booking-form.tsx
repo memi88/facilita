@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, Textarea } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 import { createManualBookingRequest } from "../actions";
+import { getSlotsForDuration } from "../availability";
 import type { CalendarDay, TimeSlot } from "../types";
 import type { BookingServiceType } from "../types";
 import { Eyebrow, IconBadge, PageCard } from "@/components/ui/scheduler-shell";
@@ -54,8 +55,10 @@ export function ManualBookingForm({
     startOfMonth(parseISO(days[0]?.date ?? new Date().toISOString()))
   );
   const [selectedDate, setSelectedDate] = useState(days[0]?.date ?? "");
-  const slots = availabilityByDate[selectedDate] ?? [];
-  const [selectedTime, setSelectedTime] = useState(getFirstAvailableTime(slots));
+  const slots = useMemo(
+    () => availabilityByDate[selectedDate] ?? [],
+    [availabilityByDate, selectedDate]
+  );
   const [selectedServiceTypeId, setSelectedServiceTypeId] = useState(
     serviceTypes[0]?.id ?? ""
   );
@@ -68,6 +71,12 @@ export function ManualBookingForm({
     serviceTypes.find((serviceType) => serviceType.id === selectedServiceTypeId) ??
     serviceTypes[0] ??
     null;
+  const serviceDurationMinutes = selectedServiceType?.duration_minutes ?? 30;
+  const visibleSlots = useMemo(
+    () => getSlotsForDuration(slots, serviceDurationMinutes),
+    [serviceDurationMinutes, slots]
+  );
+  const [selectedTime, setSelectedTime] = useState(getFirstAvailableTime(visibleSlots));
   const minMonthDate = useMemo(
     () => startOfMonth(parseISO(days[0]?.date ?? new Date().toISOString())),
     [days]
@@ -94,7 +103,10 @@ export function ManualBookingForm({
     return eachDayOfInterval({ start: gridStart, end: gridEnd }).map((date) => {
       const dateKey = format(date, "yyyy-MM-dd");
       const day = days.find((item) => item.date === dateKey);
-      const available = (availabilityByDate[dateKey] ?? []).some((slot) => slot.available);
+      const available = getSlotsForDuration(
+        availabilityByDate[dateKey] ?? [],
+        serviceDurationMinutes
+      ).some((slot) => slot.available);
 
       return {
         date: dateKey,
@@ -109,7 +121,11 @@ export function ManualBookingForm({
         available
       };
     });
-  }, [availabilityByDate, days, visibleMonthDate]);
+  }, [availabilityByDate, days, serviceDurationMinutes, visibleMonthDate]);
+
+  function getAvailableSlotsForDate(date: string) {
+    return getSlotsForDuration(availabilityByDate[date] ?? [], serviceDurationMinutes);
+  }
 
   function getDefaultDateForMonth(monthDate: Date) {
     const monthKey = format(monthDate, "yyyy-MM");
@@ -117,7 +133,7 @@ export function ManualBookingForm({
 
     return (
       monthCandidates.find(
-        (day) => !day.isPast && (availabilityByDate[day.date] ?? []).some((slot) => slot.available)
+        (day) => !day.isPast && getAvailableSlotsForDate(day.date).some((slot) => slot.available)
       )?.date ??
       monthCandidates.find((day) => !day.isPast)?.date ??
       monthCandidates[0]?.date ??
@@ -148,14 +164,13 @@ export function ManualBookingForm({
   }, [selectedServiceTypeId, serviceTypes]);
 
   useEffect(() => {
-    const nextSlots = availabilityByDate[selectedDate] ?? [];
-    if (!nextSlots.some((slot) => slot.time === selectedTime && slot.available)) {
-      setSelectedTime(getFirstAvailableTime(nextSlots));
+    if (!visibleSlots.some((slot) => slot.time === selectedTime && slot.available)) {
+      setSelectedTime(getFirstAvailableTime(visibleSlots));
     }
-  }, [availabilityByDate, selectedDate, selectedTime]);
+  }, [selectedDate, selectedTime, visibleSlots]);
 
   function handleDateChange(date: string) {
-    const nextSlots = availabilityByDate[date] ?? [];
+    const nextSlots = getAvailableSlotsForDate(date);
     setSelectedDate(date);
     setSelectedTime(getFirstAvailableTime(nextSlots));
     setVisibleMonthDate(startOfMonth(parseISO(date)));
@@ -405,13 +420,13 @@ export function ManualBookingForm({
               <p className="text-base font-semibold">{selectedDateLabel}</p>
               <p className="text-sm text-muted-foreground">Fuso horário: São Paulo (GMT-3)</p>
             </div>
-            <div className="rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
-              {slots.length} horários
+              <div className="rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
+              {visibleSlots.length} horários
             </div>
           </div>
           <div className="max-h-[420px] space-y-3 overflow-auto p-5">
-            {slots.length ? (
-              slots.map((slot) => (
+            {visibleSlots.length ? (
+              visibleSlots.map((slot) => (
                 <button
                   key={slot.time}
                   type="button"

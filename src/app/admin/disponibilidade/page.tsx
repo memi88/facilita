@@ -5,9 +5,14 @@ import { WorkspaceTopNav } from "@/components/ui/workspace-top-nav";
 import { Button } from "@/components/ui/button";
 import { AvailabilitySettings } from "@/features/availability/components/availability-settings";
 import { getAvailabilityDateBlocks, getAvailabilityRules } from "@/features/booking/availability-data";
+import { getCalendarBusySlots } from "@/features/calendar/provider";
 import { getProfileByUserId, getServiceTypesByProfileId } from "@/features/profiles/data";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getPublicBookingUrl } from "@/lib/site-url";
+
+function getLocalDateString(date: Date) {
+  return date.toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
+}
 
 export default async function AvailabilityPage() {
   const supabase = createSupabaseServerClient();
@@ -30,6 +35,11 @@ export default async function AvailabilityPage() {
     getAvailabilityDateBlocks(profile.id)
   ]);
   const serviceTypes = await getServiceTypesByProfileId(profile.id);
+  const busySlots = await getCalendarBusySlots(
+    profile,
+    getLocalDateString(new Date()),
+    getLocalDateString(new Date(Date.now() + 14 * 24 * 60 * 60 * 1000))
+  );
   const publicBookingUrl = getPublicBookingUrl(profile.slug);
 
   return (
@@ -88,7 +98,7 @@ export default async function AvailabilityPage() {
             </div>
           </div>
 
-          <AvailabilitySettings rules={rules} dateBlocks={dateBlocks} />
+          <AvailabilitySettings rules={rules} dateBlocks={dateBlocks} busySlots={busySlots} />
 
           <div className="mt-6 rounded-[1.5rem] border border-border bg-white p-6 shadow-soft">
             <h2 className="text-xl font-semibold tracking-tight">Preferências de Agendamento</h2>
