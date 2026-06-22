@@ -24,7 +24,7 @@ export async function signInWithEmail(
   _previousState: LoginActionState,
   formData: FormData
 ): Promise<LoginActionState> {
-  if (typeof formData.get("website") === "string" && String(formData.get("website")).trim()) {
+  if (typeof formData.get("hp_contact_field") === "string" && String(formData.get("hp_contact_field")).trim()) {
     return { message: "Nao foi possivel processar sua solicitacao." };
   }
 

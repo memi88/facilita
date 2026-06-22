@@ -28,14 +28,17 @@ export function LoginForm({ nextPath }: { nextPath: string }) {
     <form action={formAction} className="grid gap-4">
       <input type="hidden" name="next" value={nextPath} />
       <input type="hidden" name="formStartedAt" value={formStartedAt} />
-      <input
-        type="text"
-        name="website"
-        tabIndex={-1}
-        autoComplete="off"
-        aria-hidden="true"
-        className="sr-only"
-      />
+      <div style={{ position: "absolute", left: "-9999px", top: "-9999px" }} aria-hidden="true">
+        <label htmlFor="hp_contact_field">Não preencha este campo</label>
+        <input
+          type="text"
+          id="hp_contact_field"
+          name="hp_contact_field"
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+        />
+      </div>
       <Field label="E-mail">
         <Input name="email" type="email" required autoComplete="email" />
       </Field>
