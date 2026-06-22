@@ -18,9 +18,9 @@ function timeToMinutes(time: string) {
 export function getSlotsForDuration(slots: TimeSlot[], durationMinutes: number) {
   const requiredBlocks = Math.max(1, Math.ceil(durationMinutes / 30));
 
-  return slots.map((slot, index) => {
+  return slots.filter((slot, index) => {
     if (!slot.available) {
-      return slot;
+      return false;
     }
 
     const startMinutes = timeToMinutes(slot.time);
@@ -33,10 +33,7 @@ export function getSlotsForDuration(slots: TimeSlot[], durationMinutes: number) 
       );
     }).every(Boolean);
 
-    return {
-      ...slot,
-      available: hasEnoughConsecutiveBlocks
-    };
+    return hasEnoughConsecutiveBlocks;
   });
 }
 

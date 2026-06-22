@@ -420,7 +420,7 @@ export function ManualBookingForm({
               <p className="text-base font-semibold">{selectedDateLabel}</p>
               <p className="text-sm text-muted-foreground">Fuso horário: São Paulo (GMT-3)</p>
             </div>
-              <div className="rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
+            <div className="rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
               {visibleSlots.length} horários
             </div>
           </div>
@@ -430,15 +430,12 @@ export function ManualBookingForm({
                 <button
                   key={slot.time}
                   type="button"
-                  disabled={!slot.available}
                   onClick={() => setSelectedTime(slot.time)}
                   className={cn(
                     "w-full rounded-2xl border px-4 py-3.5 text-center text-base font-semibold transition",
                     selectedTime === slot.time
                       ? "border-primary bg-primary text-primary-foreground shadow-soft"
-                      : slot.available
-                        ? "border-border bg-white text-foreground hover:bg-muted"
-                        : "cursor-not-allowed border-border bg-muted/40 text-muted-foreground line-through"
+                      : "border-border bg-white text-foreground hover:bg-muted"
                   )}
                 >
                   {slot.label}

@@ -510,15 +510,12 @@ export function BookingForm({
                   <button
                     key={slot.time}
                     type="button"
-                    disabled={!slot.available}
                     onClick={() => setSelectedTime(slot.time)}
                     className={cn(
                       "w-full rounded-2xl border px-4 py-3.5 text-center text-base font-semibold transition",
                       selectedTime === slot.time
                         ? "border-primary bg-primary text-primary-foreground shadow-soft"
-                        : slot.available
-                          ? "border-border bg-white text-foreground hover:bg-muted"
-                          : "cursor-not-allowed border-border bg-muted/40 text-muted-foreground line-through"
+                        : "border-border bg-white text-foreground hover:bg-muted"
                     )}
                   >
                     {slot.label}
