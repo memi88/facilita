@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
         .eq("profile_id", profile.id);
     }
 
-    await adminSupabase.from("google_calendar_connections").upsert(
+    const { error: upsertError } = await adminSupabase.from("google_calendar_connections").upsert(
       {
         profile_id: profile.id,
         label: payload.label,
@@ -102,6 +102,10 @@ export async function GET(request: NextRequest) {
       },
       { onConflict: "profile_id,calendar_id" }
     );
+
+    if (upsertError) {
+      console.error("[google-calendar] upsert failed", upsertError);
+    }
 
     const { data: remainingConnections } = await adminSupabase
       .from("google_calendar_connections")
