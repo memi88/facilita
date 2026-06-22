@@ -6,7 +6,7 @@ frontend:
         - npm ci
     build:
       commands:
-        - env | grep -e SUPABASE_SERVICE_ROLE_KEY -e NEXT_PUBLIC_ >> .env.production
+        - env | grep -e SUPABASE_SERVICE_ROLE_KEY -e GOOGLE_CLIENT_ID -e GOOGLE_CLIENT_SECRET -e NEXT_PUBLIC_ >> .env.production
         - npm run build
   artifacts:
     baseDirectory: .next
