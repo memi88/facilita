@@ -2,7 +2,6 @@
 
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { isLikelyAutomatedSubmission } from "@/lib/form-security";
 
 export type LoginActionState = {
   message: string;
@@ -25,12 +24,7 @@ export async function signInWithEmail(
   _previousState: LoginActionState,
   formData: FormData
 ): Promise<LoginActionState> {
-  if (
-    isLikelyAutomatedSubmission({
-      honeypot: formData.get("website"),
-      submittedAt: formData.get("formStartedAt")
-    })
-  ) {
+  if (typeof formData.get("website") === "string" && String(formData.get("website")).trim()) {
     return { message: "Nao foi possivel processar sua solicitacao." };
   }
 
