@@ -226,7 +226,6 @@ export async function saveCurrentUserProfile(
   const phone = String(formData.get("phone") || "").trim();
   const calendarEmail = normalizeOptionalEmail(formData.get("calendarEmail"));
   const calendarEmailIsAccountEmail = formData.get("calendarEmailIsAccountEmail") === "on";
-  const googleCalendarId = String(formData.get("googleCalendarId") || "").trim();
   const slug = normalizeSlug(String(formData.get("slug") || publicName || name));
   const returnTo = getSafeReturnToPath(formData.get("returnTo"), "/admin/perfil?tab=perfil");
 
@@ -245,6 +244,7 @@ export async function saveCurrentUserProfile(
 
   const adminSupabase = createSupabaseAdminClient();
   const currentProfile = await getProfileByUserId(user.id);
+  const googleCalendarId = String(formData.get("googleCalendarId") || "").trim();
   const existingSlug = await adminSupabase
     .from("profiles")
     .select("id,user_id")
@@ -265,7 +265,8 @@ export async function saveCurrentUserProfile(
       phone: phone || null,
       slug,
       calendar_email: calendarEmailIsAccountEmail ? user.email : calendarEmail,
-      google_calendar_id: googleCalendarId || null,
+      google_calendar_id:
+        googleCalendarId || currentProfile?.google_calendar_id || null,
       calendar_connected: currentProfile?.calendar_connected ?? false,
       calendar_email_is_account_email: calendarEmailIsAccountEmail
     },
