@@ -15,6 +15,7 @@ import { WorkspaceTopNav } from "@/components/ui/workspace-top-nav";
 import { getBookingRequests } from "@/features/booking/data";
 import { getProfileByUserId, getServiceTypesByProfileId } from "@/features/profiles/data";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getLegalConsentRedirectPath, needsLegalConsent } from "@/lib/legal-consent";
 import { getPublicBookingUrl } from "@/lib/site-url";
 import type { BookingRequest } from "@/lib/supabase/types";
 
@@ -43,6 +44,10 @@ export default async function AdminPage() {
 
   if (!profile) {
     redirect("/admin/perfil");
+  }
+
+  if (needsLegalConsent(profile)) {
+    redirect(getLegalConsentRedirectPath("/admin"));
   }
 
   const serviceTypes = await getServiceTypesByProfileId(profile.id);

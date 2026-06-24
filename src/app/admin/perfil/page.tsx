@@ -7,6 +7,7 @@ import { ProfileForm } from "@/features/profiles/components/profile-form";
 import { ServiceTypesManager } from "@/features/profiles/components/service-types-manager";
 import { getGoogleCalendarConnections } from "@/features/calendar/google-data";
 import { getProfileByUserId, getServiceTypesByProfileId } from "@/features/profiles/data";
+import { getLegalConsentRedirectPath, needsLegalConsent } from "@/lib/legal-consent";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { WorkspaceTopNav } from "@/components/ui/workspace-top-nav";
 import { WorkspaceSidebar } from "@/components/ui/workspace-sidebar";
@@ -37,6 +38,11 @@ export default async function AdminProfileSetupPage({
   }
 
   const profile = await getProfileByUserId(user.id);
+
+  if (profile && needsLegalConsent(profile)) {
+    redirect(getLegalConsentRedirectPath("/admin/perfil"));
+  }
+
   const serviceTypes = profile ? await getServiceTypesByProfileId(profile.id) : [];
   const calendarConnections = profile ? await getGoogleCalendarConnections(profile.id) : [];
   const currentTab = normalizeTab(searchParams.tab);

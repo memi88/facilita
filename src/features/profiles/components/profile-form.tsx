@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
-import { CalendarCheck2, Save, Unplug } from "lucide-react";
+import { Save } from "lucide-react";
 import { useFormState, useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
@@ -45,7 +44,6 @@ export function ProfileForm({
     () => normalizeSlug(slug || publicName),
     [publicName, slug]
   );
-  const calendarConnected = Boolean(profile?.calendar_connected);
   const calendarEmailValue = useAccountEmail ? email ?? "" : calendarEmail;
 
   return (
@@ -147,58 +145,9 @@ export function ProfileForm({
         </Field>
       </div>
 
-      <div className="rounded-[1.25rem] border border-border/80 bg-[rgba(37,99,235,0.04)] p-5">
-        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <CalendarCheck2 className="h-5 w-5 text-primary" />
-              <h2 className="text-base font-semibold">Google Calendar</h2>
-            </div>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {calendarConnected
-                ? `Conectado${profile?.calendar_email ? ` em ${profile.calendar_email}` : ""}.`
-                : "Conecte a conta Google para bloquear horarios ocupados automaticamente."}
-              {" "}
-              Outras agendas conectadas ficam logo abaixo.
-            </p>
-          </div>
-          {profile ? (
-            <Link
-              href={`/api/google-calendar/connect?returnTo=${encodeURIComponent(returnTo)}`}
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-soft transition hover:brightness-95"
-            >
-              {calendarConnected ? (
-                <Unplug className="h-4 w-4" />
-              ) : (
-                <CalendarCheck2 className="h-4 w-4" />
-              )}
-              {calendarConnected ? "Reconectar Google" : "Conectar Google"}
-            </Link>
-          ) : (
-            <p className="rounded-md border border-border bg-white px-3 py-2 text-sm font-medium text-muted-foreground">
-              Salve o perfil antes de conectar.
-            </p>
-          )}
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Google Calendar ID">
-            <Input
-              name="googleCalendarId"
-              defaultValue={profile?.google_calendar_id ?? ""}
-              placeholder="primary"
-            />
-          </Field>
-          <div className="rounded-2xl border border-border/80 bg-white px-3 py-2 text-sm text-muted-foreground">
-            Se o e-mail principal estiver marcado como o do cadastro, ele tambem e usado na
-            autorizacao do Google.
-          </div>
-        </div>
-      </div>
-
       <div className="flex flex-wrap items-center gap-3">
         <SaveProfileButton />
-        {state.message ? (
+        {state?.message ? (
           <p className="text-sm text-red-700">{state.message}</p>
         ) : null}
       </div>

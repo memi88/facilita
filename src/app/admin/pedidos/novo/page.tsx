@@ -13,6 +13,7 @@ import {
 import { ManualBookingForm } from "@/features/booking/components/manual-booking-form";
 import { getCalendarBusySlots, groupBusySlotsByDate } from "@/features/calendar/provider";
 import { getProfileByUserId, getServiceTypesByProfileId } from "@/features/profiles/data";
+import { getLegalConsentRedirectPath, needsLegalConsent } from "@/lib/legal-consent";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getPublicBookingUrl } from "@/lib/site-url";
 
@@ -32,6 +33,10 @@ export default async function NewManualBookingPage() {
 
   if (!profile) {
     redirect("/admin/perfil");
+  }
+
+  if (needsLegalConsent(profile)) {
+    redirect(getLegalConsentRedirectPath("/admin/pedidos/novo"));
   }
 
   const days = getCalendarDays();

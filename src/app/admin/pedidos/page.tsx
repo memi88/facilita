@@ -9,6 +9,7 @@ import { AdminBookingFilters } from "@/features/booking/components/admin-booking
 import { AdminBookingList } from "@/features/booking/components/admin-booking-list";
 import { getBookingRequests } from "@/features/booking/data";
 import { getProfileByUserId, getServiceTypesByProfileId } from "@/features/profiles/data";
+import { getLegalConsentRedirectPath, needsLegalConsent } from "@/lib/legal-consent";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getPublicBookingUrl } from "@/lib/site-url";
 import type { BookingRequest } from "@/lib/supabase/types";
@@ -89,6 +90,10 @@ export default async function RequestsPage({
 
   if (!profile) {
     redirect("/admin/perfil");
+  }
+
+  if (needsLegalConsent(profile)) {
+    redirect(getLegalConsentRedirectPath("/admin/pedidos"));
   }
 
   const bookings = await getBookingRequests(profile.id);

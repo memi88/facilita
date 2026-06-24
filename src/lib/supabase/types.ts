@@ -39,6 +39,8 @@ export type Database = {
           google_calendar_id: string | null;
           calendar_connected: boolean;
           calendar_email_is_account_email: boolean;
+          legal_consent_version: number;
+          legal_consent_accepted_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -54,6 +56,8 @@ export type Database = {
           google_calendar_id?: string | null;
           calendar_connected?: boolean;
           calendar_email_is_account_email?: boolean;
+          legal_consent_version?: number;
+          legal_consent_accepted_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -68,6 +72,8 @@ export type Database = {
           google_calendar_id?: string | null;
           calendar_connected?: boolean;
           calendar_email_is_account_email?: boolean;
+          legal_consent_version?: number;
+          legal_consent_accepted_at?: string | null;
           updated_at?: string;
         };
         Relationships: [];

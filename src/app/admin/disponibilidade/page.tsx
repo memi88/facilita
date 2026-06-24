@@ -7,6 +7,7 @@ import { AvailabilitySettings } from "@/features/availability/components/availab
 import { getAvailabilityDateBlocks, getAvailabilityRules } from "@/features/booking/availability-data";
 import { getCalendarBusySlots } from "@/features/calendar/provider";
 import { getProfileByUserId, getServiceTypesByProfileId } from "@/features/profiles/data";
+import { getLegalConsentRedirectPath, needsLegalConsent } from "@/lib/legal-consent";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getPublicBookingUrl } from "@/lib/site-url";
 
@@ -28,6 +29,10 @@ export default async function AvailabilityPage() {
 
   if (!profile) {
     redirect("/admin/perfil");
+  }
+
+  if (needsLegalConsent(profile)) {
+    redirect(getLegalConsentRedirectPath("/admin/disponibilidade"));
   }
 
   const [rules, dateBlocks] = await Promise.all([
