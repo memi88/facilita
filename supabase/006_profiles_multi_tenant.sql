@@ -9,6 +9,8 @@ create table if not exists public.profiles (
   calendar_email text,
   google_calendar_id text,
   calendar_connected boolean not null default false,
+  legal_consent_version integer not null default 0,
+  legal_consent_accepted_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

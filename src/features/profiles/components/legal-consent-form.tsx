@@ -2,59 +2,33 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { UserPlus } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { useFormState, useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
-import { Field, Input } from "@/components/ui/field";
 import { CURRENT_LEGAL_CONSENT_VERSION } from "@/lib/legal-consent";
-import { signUpProfessional } from "../actions";
+import { acceptLegalConsent } from "../actions";
 
-function SubmitButton({ label }: { label: string }) {
+function SubmitButton() {
   const { pending } = useFormStatus();
 
   return (
     <Button type="submit" disabled={pending} className="w-full">
-      <UserPlus className="h-4 w-4" />
-      {pending ? "Salvando..." : label}
+      {pending ? "Registrando..." : "Aceitar e continuar"}
     </Button>
   );
 }
 
-export function SignUpForm() {
-  const [formStartedAt] = useState(() => new Date().toISOString());
+export function LegalConsentForm({ nextPath }: { nextPath: string }) {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [state, formAction] = useFormState(signUpProfessional, {
+  const [state, formAction] = useFormState(acceptLegalConsent, {
+    ok: false,
     message: ""
   });
 
   return (
     <form action={formAction} className="grid gap-4">
-      <input type="hidden" name="formStartedAt" value={formStartedAt} />
+      <input type="hidden" name="next" value={nextPath} />
       <input type="hidden" name="legalConsentVersion" value={CURRENT_LEGAL_CONSENT_VERSION} />
-      <input
-        type="text"
-        name="website"
-        tabIndex={-1}
-        autoComplete="off"
-        aria-hidden="true"
-        className="sr-only"
-      />
-      <Field label="Nome">
-        <Input name="name" required placeholder="Maria Silva" />
-      </Field>
-      <Field label="E-mail">
-        <Input name="email" type="email" required autoComplete="email" />
-      </Field>
-      <Field label="Senha">
-        <Input
-          name="password"
-          type="password"
-          required
-          minLength={6}
-          autoComplete="new-password"
-        />
-      </Field>
-
       <label className="flex items-start gap-3 rounded-2xl border border-border bg-[rgba(37,99,235,0.04)] p-4 text-sm leading-6 text-foreground">
         <input
           type="checkbox"
@@ -65,7 +39,7 @@ export function SignUpForm() {
           required
         />
         <span>
-          Aceito os{" "}
+          Li e aceito os{" "}
           <Link href="/termos" className="font-semibold text-primary hover:underline">
             Termos de Serviço
           </Link>{" "}
@@ -77,19 +51,21 @@ export function SignUpForm() {
         </span>
       </label>
 
-      <SubmitButton label="Criar conta" />
+      <div className="rounded-2xl border border-border bg-white p-4">
+        <div className="flex items-start gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <ShieldCheck className="h-5 w-5" />
+          </span>
+          <div>
+            <p className="text-sm font-semibold">Consentimento versionado</p>
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">
+              Se a versão dos termos mudar, você verá esta tela novamente antes de continuar.
+            </p>
+          </div>
+        </div>
+      </div>
 
-      <p className="text-sm leading-6 text-muted-foreground">
-        Ao se cadastrar, você concorda com nossos{" "}
-        <Link href="/termos" className="font-semibold text-primary hover:underline">
-          Termos de Serviço
-        </Link>{" "}
-        e com a{" "}
-        <Link href="/privacidade" className="font-semibold text-primary hover:underline">
-          Política de Privacidade
-        </Link>
-        .
-      </p>
+      <SubmitButton />
 
       {state.message ? (
         <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">

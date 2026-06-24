@@ -5,11 +5,17 @@ import { SignUpForm } from "@/features/profiles/components/signup-form";
 import { getCurrentUserProfile } from "@/features/profiles/data";
 import { BrandLogo } from "@/components/ui/brand-logo";
 import { PageCard } from "@/components/ui/scheduler-shell";
+import { PublicFooter } from "@/components/ui/public-footer";
+import { getLegalConsentRedirectPath, needsLegalConsent } from "@/lib/legal-consent";
 
 export default async function SignUpPage() {
   const profile = await getCurrentUserProfile();
 
   if (profile) {
+    if (needsLegalConsent(profile)) {
+      redirect(getLegalConsentRedirectPath("/admin"));
+    }
+
     redirect("/admin");
   }
 
@@ -77,6 +83,8 @@ export default async function SignUpPage() {
           </section>
         </div>
       </main>
+
+      <PublicFooter />
     </div>
   );
 }

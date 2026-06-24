@@ -3,7 +3,10 @@ import { redirect } from "next/navigation";
 import { ArrowLeft, LockKeyhole, ShieldCheck } from "lucide-react";
 import { LoginForm } from "@/features/auth/components/login-form";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getCurrentUserProfile } from "@/features/profiles/data";
+import { getLegalConsentRedirectPath, needsLegalConsent } from "@/lib/legal-consent";
 import { AppTopBar, Eyebrow, IconBadge, PageCard, ProgressBar, ShellBackground } from "@/components/ui/scheduler-shell";
+import { PublicFooter } from "@/components/ui/public-footer";
 
 function getSafeNextPath(value?: string) {
   if (!value || !value.startsWith("/") || value.startsWith("//") || value.includes("\\")) {
@@ -25,6 +28,12 @@ export default async function LoginPage({
   } = await supabase.auth.getUser();
 
   if (user) {
+    const profile = await getCurrentUserProfile();
+
+    if (profile && needsLegalConsent(profile)) {
+      redirect(getLegalConsentRedirectPath(nextPath));
+    }
+
     redirect(nextPath);
   }
 
@@ -115,6 +124,7 @@ export default async function LoginPage({
           </section>
         </div>
       </main>
+      <PublicFooter />
     </ShellBackground>
   );
 }

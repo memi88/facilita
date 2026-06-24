@@ -13,6 +13,7 @@ import {
 import { AppTopBar, Eyebrow, PageCard, ShellBackground } from "@/components/ui/scheduler-shell";
 import { LogoutButton } from "@/features/auth/components/logout-button";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { PublicFooter } from "@/components/ui/public-footer";
 
 const steps = [
   {
@@ -239,6 +240,7 @@ export default async function HomePage() {
           </div>
         </section>
       </main>
+      <PublicFooter />
     </ShellBackground>
   );
 }

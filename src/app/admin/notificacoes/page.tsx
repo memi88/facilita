@@ -7,6 +7,7 @@ import { WorkspaceTopNav } from "@/components/ui/workspace-top-nav";
 import { NotificationsPanel } from "@/features/notifications/components/notifications-panel";
 import { getRecentNotifications } from "@/features/notifications/data";
 import { getProfileByUserId, getServiceTypesByProfileId } from "@/features/profiles/data";
+import { getLegalConsentRedirectPath, needsLegalConsent } from "@/lib/legal-consent";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getPublicBookingUrl } from "@/lib/site-url";
 
@@ -24,6 +25,10 @@ export default async function NotificationsPage() {
 
   if (!profile) {
     redirect("/admin/perfil");
+  }
+
+  if (needsLegalConsent(profile)) {
+    redirect(getLegalConsentRedirectPath("/admin/notificacoes"));
   }
 
   const notifications = await getRecentNotifications(profile.id);

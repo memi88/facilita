@@ -4,6 +4,10 @@ import { redirect } from "next/navigation";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { isLikelyAutomatedSubmission } from "@/lib/form-security";
 import { getSafeInternalPath } from "@/lib/navigation";
+import {
+  CURRENT_LEGAL_CONSENT_VERSION,
+  getLegalConsentRedirectPath
+} from "@/lib/legal-consent";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getProfileByUserId } from "./data";
 import { normalizeSlug } from "./utils";
@@ -22,6 +26,11 @@ export type ServiceTypeFormState = {
 };
 
 export type GoogleCalendarConnectionActionState = {
+  ok: boolean;
+  message: string;
+};
+
+export type LegalConsentActionState = {
   ok: boolean;
   message: string;
 };
@@ -77,10 +86,17 @@ export async function signUpProfessional(
   const name = String(formData.get("name") || "").trim();
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const password = String(formData.get("password") || "");
+  const acceptedTerms = formData.get("acceptedTerms") === "on";
 
   if (!name || !email || password.length < 6) {
     return {
       message: "Informe nome, e-mail e senha com pelo menos 6 caracteres."
+    };
+  }
+
+  if (!acceptedTerms) {
+    return {
+      message: "Você precisa aceitar os Termos de Serviço e a Política de Privacidade."
     };
   }
 
@@ -102,16 +118,18 @@ export async function signUpProfessional(
   const { data: createdProfile, error: profileError } = await adminSupabase
     .from("profiles")
     .insert({
-    user_id: authResult.data.user.id,
-    name,
-    public_name: name,
-    profession: null,
-    phone: null,
-    slug,
-    calendar_email: email,
-    google_calendar_id: null,
-    calendar_connected: false,
-    calendar_email_is_account_email: true
+      user_id: authResult.data.user.id,
+      name,
+      public_name: name,
+      profession: null,
+      phone: null,
+      slug,
+      calendar_email: email,
+      google_calendar_id: null,
+      calendar_connected: false,
+      calendar_email_is_account_email: true,
+      legal_consent_version: CURRENT_LEGAL_CONSENT_VERSION,
+      legal_consent_accepted_at: new Date().toISOString()
     })
     .select("*")
     .single();
@@ -144,6 +162,58 @@ export async function signUpProfessional(
   }
 
   redirect("/admin/perfil");
+}
+
+export async function acceptLegalConsent(
+  _previousState: LegalConsentActionState,
+  formData: FormData
+): Promise<LegalConsentActionState> {
+  const acceptedTerms = formData.get("acceptedTerms") === "on";
+  const legalConsentVersion = Number.parseInt(
+    String(formData.get("legalConsentVersion") || ""),
+    10
+  );
+  const nextPath = getSafeInternalPath(String(formData.get("next") || ""), "/admin");
+
+  if (!acceptedTerms || legalConsentVersion !== CURRENT_LEGAL_CONSENT_VERSION) {
+    return {
+      ok: false,
+      message: "Confirme o consentimento para continuar."
+    };
+  }
+
+  const serverSupabase = createSupabaseServerClient();
+  const {
+    data: { user }
+  } = await serverSupabase.auth.getUser();
+
+  if (!user) {
+    redirect(getLegalConsentRedirectPath(nextPath));
+  }
+
+  const profile = await getProfileByUserId(user.id);
+
+  if (!profile) {
+    redirect("/admin");
+  }
+
+  const adminSupabase = createSupabaseAdminClient();
+  const { error } = await adminSupabase
+    .from("profiles")
+    .update({
+      legal_consent_version: CURRENT_LEGAL_CONSENT_VERSION,
+      legal_consent_accepted_at: new Date().toISOString()
+    })
+    .eq("id", profile.id);
+
+  if (error) {
+    return {
+      ok: false,
+      message: "Nao foi possivel registrar seu consentimento."
+    };
+  }
+
+  redirect(nextPath);
 }
 
 export async function saveCurrentUserProfile(
